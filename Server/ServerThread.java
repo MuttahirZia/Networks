@@ -36,7 +36,7 @@ public class ServerThread extends Server implements Runnable {
 				else if (line.matches("get")) {
 					lib.getBook(0);
 					lib.getBook(1);
-					System.out.println("get");
+					outStream.println("get");
 				}
 				else if (line.matches("remove")) {
 					lib.removeBook(0);

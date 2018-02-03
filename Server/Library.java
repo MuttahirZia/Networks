@@ -6,7 +6,7 @@ public class Library {
 	private List<Book> library;
 
 	public Library() {
-		library = new ArrayList<Book>();
+		library = Collections.synchronizedList(new ArrayList<Book>());
 	}
 
 	private class Book {
@@ -27,7 +27,9 @@ public class Library {
 		// book.publisher = bookInfo[3];
 		// book.year = bookInfo[4];
 
-		library.add(book);
+		synchronized(library) {
+			library.add(book);
+		}
 	}
 
 	public void updateBook(String updatedBook[]) {
@@ -37,8 +39,11 @@ public class Library {
 
 	public void getBook(int index) {
 		try {
-			Book currentBook = library.get(index);
-			System.out.println(currentBook.isbn + " " + currentBook.title);
+			synchronized(library) {
+				Book currentBook = library.get(index);
+				System.out.println(currentBook.isbn + " " + currentBook.title);
+			}
+			
 		} catch (Exception e) {
 			System.err.println(e);
 		}
@@ -46,7 +51,9 @@ public class Library {
 
 	public void removeBook(int index) {
 		try {
-			library.remove(index);
+			synchronized(library) {
+				library.remove(index);
+			}
 		} catch (Exception e) {
 			System.err.println(e);
 		}
@@ -54,8 +61,14 @@ public class Library {
 
 	public void displayLibrary() {
 
-		for (int i = 0; i < library.size(); i++) {
-			getBook(i);
+		try{
+			synchronized(library) {
+				for (int i = 0; i < library.size(); i++) {
+					getBook(i);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println(e);
 		}
 	}
 }

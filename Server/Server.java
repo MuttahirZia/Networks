@@ -4,10 +4,11 @@ import java.util.*;
 
 public class Server {
 
-	public Library lib = new Library();
+	public static Library lib;
 
 	public static void main(String args[]) {
 		try {			
+			lib = new Library();
 			
 			ServerSocket serverSocket = new ServerSocket(4444);
 			

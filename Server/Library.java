@@ -23,9 +23,9 @@ public class Library {
 
 		book.isbn = bookInfo[0];
 		book.title = bookInfo[1];
-		book.author = bookInfo[2];
-		book.publisher = bookInfo[3];
-		book.year = bookInfo[4];
+		// book.author = bookInfo[2];
+		// book.publisher = bookInfo[3];
+		// book.year = bookInfo[4];
 
 		library.add(book);
 	}
@@ -35,11 +35,27 @@ public class Library {
 
 	}
 
-	public void getBook() {
-		//currentBook = library.indexOf(BookString)
+	public void getBook(int index) {
+		try {
+			Book currentBook = library.get(index);
+			System.out.println(currentBook.isbn + " " + currentBook.title);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
 	}
 
-	public void removeBook(Book book) {
-		library.remove(library.indexOf(book));
+	public void removeBook(int index) {
+		try {
+			library.remove(index);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+
+	public void displayLibrary() {
+
+		for (int i = 0; i < library.size(); i++) {
+			getBook(i);
+		}
 	}
 }

@@ -48,7 +48,7 @@ public class Client extends Frame implements WindowListener {
 		setVisible(true);
 	}
 
-	public verifyIsbn(String isbn) {
+	public void verifyIsbn(String isbn) {
 		//verify ISBN input
 	}
 

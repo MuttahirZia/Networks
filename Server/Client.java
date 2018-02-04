@@ -104,7 +104,7 @@ public class Client extends JFrame implements ActionListener {
 
 	public void actionPerformed (ActionEvent e) {
 		String command = e.getActionCommand();
-		System.out.println(command);
+		//System.out.println(command);
 		boolean success;
 		boolean valid;
 
@@ -146,7 +146,15 @@ public class Client extends JFrame implements ActionListener {
 				success = verifyRemove();
 
 				if (success) {
-					lib_action ("Remove");
+					String ObjButtons[] = {"Yes","No"};
+    				int PromptResult = JOptionPane.showOptionDialog(null, 
+        				"Are you sure you want to remove from the database?", "Confirmation", 
+        				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, 
+       					ObjButtons,ObjButtons[1]);
+    				
+    				if(PromptResult==0) {
+     					lib_action ("Remove");       
+    				}
 
 				} else {
 					throw new Exception ("You need to specify at least one field correctly (i.e. ISBN) in order to remove books from the library");
@@ -190,16 +198,17 @@ public class Client extends JFrame implements ActionListener {
 			outStream.writeObject(input);
 			status = inStream.readLine();
 
-			JOptionPane.showMessageDialog(null, status);
+			JOptionPane.showMessageDialog(null, status, "Server Message", JOptionPane.PLAIN_MESSAGE);
 			//System.out.println(status);
 
 		} catch(Exception e) {
-			System.out.println (e.getMessage());
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);;
 		}
 	}
 
 	public void get_action (String action) {
 		String [] input = {"Get", isbn.getText(), title.getText(), author.getText(), publisher.getText(), year.getText()};
+		String results = "";
 
 		try{
 			String status;
@@ -207,17 +216,50 @@ public class Client extends JFrame implements ActionListener {
 			outStream.writeObject(input);
 			String [][] ret = (String[][])oiStream.readObject();
 
+// 			@book {Boole2009,
+//     AUTHOR = {Boole, George},
+//      TITLE = {A Treatise on the Calculus of Finite Differences},
+//  PUBLISHER = {Cambridge University Press},
+//       YEAR = {2009},
+//       ISBN = {978-1-108-00092-5},
+// }
+
 			int j = 0;
 			while(ret[j] != null) {
-				System.out.println (ret[j][0] + " , " + ret[j][1] + " , " + ret[j][2] + " , " + ret[j][3] + 
-					" , " + ret[j][4]);
+
+				String[] parts = ret[j][2].split(",");
+
+				results += 
+					"@book {" + parts[0] + ret[j][4] + ",\n" +
+					"   AUTHOR = {" + ret[j][2] + "},\n" +
+					"    TITLE = {" + ret[j][1] + "},\n" +
+					"PUBLISHER = {" + ret[j][3] + "},\n" +
+					"     YEAR = {" + ret[j][4] + "},\n" +
+					"     ISBN = {" + ret[j][0] + "},\n" +
+					"}\n\n"
+					;
 				j++;
 			}
 
 		} catch(Exception e) {
-			//JOptionPane.showMessageDialog(null, status, "Server Message");
+			//JOptionPane.showMessageDialog(null, e.getMessage(), "Fixing Message", JOptionPane.ERROR_MESSAGE);
 		}
 
+		System.out.println (results);
+		
+		if (results.length() != 0) {
+			JTextArea textArea = new JTextArea(20, 50);
+		 	textArea.setText(results);
+		  	textArea.setEditable(false);
+		  
+		  	// wrap a scrollpane around it
+		  	JScrollPane scrollPane = new JScrollPane(textArea);
+		  
+		  	// display them in a message dialog
+		  	JOptionPane.showMessageDialog(null, scrollPane, "Found Books", JOptionPane.PLAIN_MESSAGE);
+      	} else {
+      		JOptionPane.showMessageDialog (null, "No books found");
+      	}
 	}
 
 	public boolean verifySubmit () {

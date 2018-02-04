@@ -84,19 +84,18 @@ public class Library {
 			synchronized(library) {
 				List<Book> booksToUpdate = new ArrayList<Book>(searchLibrary(inputTypes, inputValues));
 		
-				if (booksToUpdate.size() > 1){
+				if (booksToUpdate.size() > 1) {
 					updateStatus = "Error occured as multiple books have same ISBN";
 				}
-				else if (booksToUpdate.size() == 0){
+				else if (booksToUpdate.size() == 0) {
 					updateStatus = "No matching books found";
 				}
-				else if (booksToUpdate.size() == 1){
+				else if (booksToUpdate.size() == 1) {
 
 					Book currentBook = booksToUpdate.get(0);
 					for (int j = 0; j < 5; j++) {
-						if (currentBook.index(j) != "") {	
+						if (!inputValues[j].equals("")) {	
 							switch(j) {
-								//case 0: currentBook.isbn = inputValues[0]; break;
 								case 1: currentBook.title = inputValues[1]; break;
 								case 2: currentBook.author = inputValues[2]; break;
 								case 3:	currentBook.publisher = inputValues[3]; break;
@@ -116,9 +115,6 @@ public class Library {
 
 		return updateStatus;
 	}
-
-
-
 
 
 	public String[][] getBook(String[] inputValues) {
@@ -142,9 +138,9 @@ public class Library {
 						returnVal[i][3] = currentBook.publisher;
 						returnVal[i][4] = currentBook.year;
 					}
-					for (int j = 0; j < foundBooks.size(); j++) {
-						System.out.println(Arrays.toString(returnVal[j]));
-					}
+					// for (int j = 0; j < foundBooks.size(); j++) {
+					// 	System.out.println(Arrays.toString(returnVal[j]));
+					// }
 				}
 			}
 
@@ -152,7 +148,6 @@ public class Library {
 			System.err.println(e);
 			returnVal = new String[0][];
 		}
-
 
 		return returnVal;
 	}
@@ -164,6 +159,7 @@ public class Library {
 	public String removeBook(String[] inputValues) {
 
 		String removeStatus = "Trying remove";
+		int numberRemoved = 0;
 
 		try {
 			synchronized(library) {
@@ -178,10 +174,10 @@ public class Library {
 						for (int j = 0; j < library.size(); j++) {
 							if (library.get(j).equals(currentBook)) {
 								library.remove(j);
+								numberRemoved++;
 							}
 						}
-
-						removeStatus = "Books successfully removed";
+						removeStatus = numberRemoved + " books successfully removed";
 					}
 				}
 				else if (foundBooks.size() <= 0){
@@ -203,7 +199,7 @@ public class Library {
 
 		System.out.println("Display:");
 		try{
-			synchronized(library) { //needed?
+			synchronized(library) { 
 				for (int i = 0; i < library.size(); i++) {
 					Book book = library.get(i);
 					book.printBook();
@@ -232,10 +228,10 @@ public class Library {
 			}
 		}
 
-		System.out.println(getAll);
-		System.out.println(Arrays.toString(inputTypes));
-		System.out.println(Arrays.toString(checkArray));
-		System.out.println("Test against: " + Arrays.toString(inputValues));
+		// System.out.println(getAll);
+		// System.out.println("InputTypes:" + Arrays.toString(inputTypes));
+		// System.out.println("Columns check:" + Arrays.toString(checkArray));
+		// System.out.println("Test against: " + Arrays.toString(inputValues));
 
 		for (int i = 0; i < library.size(); i++) {
 
@@ -253,7 +249,7 @@ public class Library {
 			}
 		}
 
-		System.out.println("Size of matchbook: "+ matchedBooks.size());
+		//System.out.println("Size of matchbook: "+ matchedBooks.size());
 		return matchedBooks;
 	}
 }

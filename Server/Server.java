@@ -13,7 +13,7 @@ public class Server {
 			lib = new Library();
 
 			int port = Integer.parseInt(args[0]);	
-			ServerSocket serverSocket = new ServerSocket(port); //TODO change to variable
+			ServerSocket serverSocket = new ServerSocket(port);
 			
 			while (true) {
 				Socket clientSocket = serverSocket.accept();

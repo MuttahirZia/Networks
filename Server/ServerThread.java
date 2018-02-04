@@ -26,6 +26,7 @@ public class ServerThread extends Server implements Runnable {
 				System.out.println("Sent:" + line);
 
 				if (line.matches("submit")) {
+
 					lib.submitBook("0123456789012","test1","","","hi");
 					lib.submitBook("0012213123121","test2","","","hello");
 					System.out.println("submit");
@@ -43,8 +44,10 @@ public class ServerThread extends Server implements Runnable {
 				}
 
 				else if (line.matches("display")) {
-					lib.displayLibrary();
 					System.out.println("display");
+					lib.displayLibrary();
+					System.out.println("now search");
+					lib.searchLibrary();
 				}
 
 				else if (line.matches("exit")) {

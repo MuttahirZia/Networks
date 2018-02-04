@@ -94,14 +94,33 @@ public class Library {
 		}
 	}
 
-	public void searchLibrary(String[] inputTypes, String[] inputValues) {
+	public void searchLibrary(){//String[] inputTypes, String[] inputValues) {
 
 		//create the search array to match with
 		//using wildcards in fields that dont need to be checked
 
+		String[] wildCardArray = new String[] {".*","test2",".*",".*",".*"};
+		System.out.println("test" + Arrays.toString(wildCardArray));
+
+		//inputValues = wildarray
 		
 
 		for (int i = 0; i < library.size(); i++) {
+
+			Book currentBook = library.get(i);
+
+			String[] currbookarrary = new String[] {currentBook.isbn, currentBook.title,
+			 currentBook.author, currentBook.publisher, currentBook.year};
+
+
+			if (Arrays.equals(wildCardArray,currbookarrary)) {
+				
+				// for (int j =0; j < 5; j++){
+
+				// String print = currbookarrary[j].toString();
+				System.out.println(Arrays.toString(currbookarrary));
+			}
+
 		
 			//loop through library checking each book with the search array
 			//add the matched books to the outgoing set

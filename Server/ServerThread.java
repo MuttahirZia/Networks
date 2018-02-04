@@ -16,36 +16,37 @@ public class ServerThread extends Server implements Runnable {
 			PrintStream outStream = new PrintStream(
 				socket.getOutputStream());
 
-			String[] list1 = {"0123456789012","test1"};
-			String[] list2 = {"0012213123121","test2"};
 			boolean running = true;
 
 			while (running) {
 					
 				String line = inStream.readLine();
 				outStream.println("Server:" + line);
-				
 				//test display on server
 				System.out.println("Sent:" + line);
 
 				if (line.matches("submit")) {
-					lib.submitBook(list1);
-					lib.submitBook(list2);
+					lib.submitBook("0123456789012","test1","","","hi");
+					lib.submitBook("0012213123121","test2","","","hello");
 					System.out.println("submit");
 				}
+
 				else if (line.matches("get")) {
 					lib.getBook(0);
 					lib.getBook(1);
 					outStream.println("get");
 				}
+
 				else if (line.matches("remove")) {
 					lib.removeBook(0);
 					System.out.println("remove");
 				}
+
 				else if (line.matches("display")) {
 					lib.displayLibrary();
 					System.out.println("display");
 				}
+
 				else if (line.matches("exit")) {
 					running = false;
 					System.out.println("Closing");

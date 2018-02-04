@@ -9,7 +9,7 @@ public class Library {
 		library = Collections.synchronizedList(new ArrayList<Book>());
 	}
 
-	private class Book {
+	public class Book {
 		String isbn;
 		String title;
 		String author;
@@ -17,31 +17,51 @@ public class Library {
 		String year;
 	}
 
-	public void submitBook(String bookInfo[]) {
+	public void submitBook(String isbn, String title, String author, 
+		String publisher, String year) {
 
 		Book book = new Book();
 
-		book.isbn = bookInfo[0];
-		book.title = bookInfo[1];
-		// book.author = bookInfo[2];
-		// book.publisher = bookInfo[3];
-		// book.year = bookInfo[4];
+		book.isbn = isbn;
+		book.title = title;
+		book.author = author;
+		book.publisher = publisher;
+		book.year = year;
 
 		synchronized(library) {
 			library.add(book);
 		}
 	}
 
-	public void updateBook(String updatedBook[]) {
-		//library[index] = newBook;
+	public void updateBook() {
+		
+		//find book to update 
+
+		synchronized(library) {
+			//update book inside library
+		}
 
 	}
 
 	public void getBook(int index) {
 		try {
+
+
 			synchronized(library) {
+
+				// for (int i = 0; i < library.size(); i++) {
+
+				// 	if (cure)
+				// }
+
 				Book currentBook = library.get(index);
-				System.out.println(currentBook.isbn + " " + currentBook.title);
+				
+
+				System.out.println(currentBook.isbn + 
+					" " + currentBook.title +
+					" " + currentBook.author +
+					" " + currentBook.publisher +
+					" " + currentBook.year);
 			}
 			
 		} catch (Exception e) {
@@ -62,13 +82,33 @@ public class Library {
 	public void displayLibrary() {
 
 		try{
-			synchronized(library) {
+			synchronized(library) { //needed?
 				for (int i = 0; i < library.size(); i++) {
 					getBook(i);
+					// Thread.sleep(1000);
+					// System.out.println(Thread.currentThread().getId());
 				}
 			}
 		} catch (Exception e) {
 			System.err.println(e);
 		}
+	}
+
+	public void searchLibrary(String[] inputTypes, String[] inputValues) {
+
+		//create the search array to match with
+		//using wildcards in fields that dont need to be checked
+
+		
+
+		for (int i = 0; i < library.size(); i++) {
+		
+			//loop through library checking each book with the search array
+			//add the matched books to the outgoing set
+
+
+
+		}
+	
 	}
 }

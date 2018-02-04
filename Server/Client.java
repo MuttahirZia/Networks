@@ -86,6 +86,7 @@ public class Client extends Frame implements WindowListener {
 		    DataInputStream inputLine = new DataInputStream(
 		    	new BufferedInputStream(System.in));
 
+		    //Book book;
 		    String line;
 
 		    outStream.println(inputLine.readLine());
@@ -97,6 +98,15 @@ public class Client extends Frame implements WindowListener {
 		    	}
 		    	outStream.println(inputLine.readLine());
 		    }
+		    // while ((book = inStream.readLine()) != null) {
+		    // 	System.out.println(book);
+
+
+		    // 	if (book.indexOf("Ok") != -1) {
+		    // 		break;
+		    // 	}
+		    // 	outStream.println(inputLine.readLine());
+		    // }
 
 		    outStream.close();
 		    inStream.close();

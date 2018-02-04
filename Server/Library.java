@@ -15,7 +15,27 @@ public class Library {
 		String author;
 		String publisher;
 		String year;
+
+		private void printBook() {
+			System.out.println(
+				this.isbn + " " + this.title + " " + 
+				this.author + " " + this.publisher + " " + this.year);
+		}
+
+		private String index(int n) {
+			String out = "";
+			switch (n) {
+				case 0: out = this.isbn; break;
+				case 1: out = this.title; break;
+				case 2: out = this.author; break;
+				case 3:	out = this.publisher; break;
+				case 4: out = this.year; break;
+			}
+			return out;
+		}
 	}
+
+
 
 	public void submitBook(String isbn, String title, String author, 
 		String publisher, String year) {
@@ -33,41 +53,39 @@ public class Library {
 		}
 	}
 
-	public void updateBook() {
-		
-		//find book to update 
 
-		synchronized(library) {
-			//update book inside library
-		}
 
+	public void updateBook(String isbn, String[] inputValues) {
+
+		String[] inputTypes = {isbn,"","","",""};
+
+		List<Book> booksToUpdate = new ArrayList<Book>(searchLibrary(inputTypes,inputValues));
+
+		Book currentBook = booksToUpdate.get(0);
+		currentBook.title = "lol";
 	}
 
-	public void getBook(int index) {
+
+
+	public void getBook(String[] inputTypes, String[] inputValues) {
 		try {
-
-
 			synchronized(library) {
 
-				// for (int i = 0; i < library.size(); i++) {
+				List<Book> foundBooks = new ArrayList<Book>(searchLibrary(inputTypes,inputValues));
 
-				// 	if (cure)
-				// }
+				for (int i = 0; i < foundBooks.size(); i++){
 
-				Book currentBook = library.get(index);
-				
-
-				System.out.println(currentBook.isbn + 
-					" " + currentBook.title +
-					" " + currentBook.author +
-					" " + currentBook.publisher +
-					" " + currentBook.year);
+					Book currentBook = foundBooks.get(i);
+					currentBook.printBook();
+				}
 			}
 			
 		} catch (Exception e) {
 			System.err.println(e);
 		}
 	}
+
+
 
 	public void removeBook(int index) {
 		try {
@@ -79,14 +97,15 @@ public class Library {
 		}
 	}
 
+
+
 	public void displayLibrary() {
 
 		try{
 			synchronized(library) { //needed?
 				for (int i = 0; i < library.size(); i++) {
-					getBook(i);
-					// Thread.sleep(1000);
-					// System.out.println(Thread.currentThread().getId());
+					Book book = library.get(i);
+					book.printBook();
 				}
 			}
 		} catch (Exception e) {
@@ -94,40 +113,48 @@ public class Library {
 		}
 	}
 
-	public void searchLibrary(){//String[] inputTypes, String[] inputValues) {
-
-		//create the search array to match with
-		//using wildcards in fields that dont need to be checked
-
-		String[] wildCardArray = new String[] {".*","test2",".*",".*",".*"};
-		System.out.println("test" + Arrays.toString(wildCardArray));
-
-		//inputValues = wildarray
-		
-
-		for (int i = 0; i < library.size(); i++) {
-
-			Book currentBook = library.get(i);
-
-			String[] currbookarrary = new String[] {currentBook.isbn, currentBook.title,
-			 currentBook.author, currentBook.publisher, currentBook.year};
 
 
-			if (Arrays.equals(wildCardArray,currbookarrary)) {
-				
-				// for (int j =0; j < 5; j++){
+	public List searchLibrary(String[] inputTypes, String[] inputValues) {
 
-				// String print = currbookarrary[j].toString();
-				System.out.println(Arrays.toString(currbookarrary));
+		List<Book> matchedBooks = new ArrayList<Book>();
+
+		boolean[] checkArray = new boolean[] {false,false,false,false,false};
+		for (int k = 0; k < 5; k++) {
+			if (inputTypes[k] != "") {
+				checkArray[k] = true; 
+			}
+		}
+
+		System.out.println(Arrays.toString(inputTypes));
+		System.out.println(Arrays.toString(checkArray));
+		System.out.println("Test against: " + Arrays.toString(inputValues));
+
+		try{
+			synchronized(library) {
+				for (int i = 0; i < library.size(); i++) {
+
+					Book currentBook = library.get(i);
+					boolean match = true;
+
+					for (int j = 0; j < 5; j++) {
+
+						if (checkArray[j] && inputValues[j] != currentBook.index(j)) {
+							match = false;
+						}
+					}
+
+					if (match) {
+						matchedBooks.add(currentBook);
+					}
+
+				}
 			}
 
-		
-			//loop through library checking each book with the search array
-			//add the matched books to the outgoing set
-
-
-
+		} catch (Exception e) {
+			System.err.println(e);
 		}
-	
+
+		return matchedBooks;
 	}
 }

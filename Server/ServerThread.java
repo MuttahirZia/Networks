@@ -26,15 +26,16 @@ public class ServerThread extends Server implements Runnable {
 				System.out.println("Sent:" + line);
 
 				if (line.matches("submit")) {
-
 					lib.submitBook("0123456789012","test1","","","hi");
-					lib.submitBook("0012213123121","test2","","","hello");
+					lib.submitBook("0012213123121","test3","","","hello");
+					lib.submitBook("1012213123121","test3","","","hello");
 					System.out.println("submit");
 				}
 
 				else if (line.matches("get")) {
-					lib.getBook(0);
-					lib.getBook(1);
+					String[] t1 = new String[] {"","test3","","",""};
+					String[] t2 = new String[] {"0012213123121","test3","","","hello"};
+					lib.getBook(t1, t2);
 					outStream.println("get");
 				}
 
@@ -43,11 +44,19 @@ public class ServerThread extends Server implements Runnable {
 					System.out.println("remove");
 				}
 
+				else if (line.matches("update")) {
+					String t1 = "0012213123121";
+					String[] t2 = new String[] {"0012213123121","test3","","","hello"};
+					lib.updateBook(t1,t2);
+				}
+
 				else if (line.matches("display")) {
 					System.out.println("display");
 					lib.displayLibrary();
 					System.out.println("now search");
-					lib.searchLibrary();
+					String[] t1 = new String[] {"","test2","","",""};
+					String[] t2 = new String[] {"0012213123121","test1","","","hello"};
+					lib.searchLibrary(t1,t2);
 				}
 
 				else if (line.matches("exit")) {

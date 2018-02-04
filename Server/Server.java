@@ -10,7 +10,7 @@ public class Server {
 		try {			
 			lib = new Library();
 			
-			ServerSocket serverSocket = new ServerSocket(4444);
+			ServerSocket serverSocket = new ServerSocket(4444); //TODO change to variable
 			
 			while (true) {
 				Socket clientSocket = serverSocket.accept();

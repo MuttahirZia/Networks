@@ -23,79 +23,158 @@ public class Library {
 		}
 
 		private String index(int n) {
-			String out = "";
+			String output = "";
 			switch (n) {
-				case 0: out = this.isbn; break;
-				case 1: out = this.title; break;
-				case 2: out = this.author; break;
-				case 3:	out = this.publisher; break;
-				case 4: out = this.year; break;
+				case 0: output = this.isbn; break;
+				case 1: output = this.title; break;
+				case 2: output = this.author; break;
+				case 3:	output = this.publisher; break;
+				case 4: output = this.year; break;
 			}
-			return out;
+			return output;
 		}
 	}
 
 
 
-	public void submitBook(String isbn, String title, String author, 
-		String publisher, String year) {
 
-		Book book = new Book();
 
-		book.isbn = isbn;
-		book.title = title;
-		book.author = author;
-		book.publisher = publisher;
-		book.year = year;
+	public String submitBook(String[] inputValues) {
 
-		synchronized(library) {
-			library.add(book);
+		String submitStatus;
+		String[] inputTypes = {inputValues[0],"","","",""};
+		List<Book> matchedBooks = new ArrayList<Book>(searchLibrary(inputTypes, inputValues));
+
+		try {
+			if (matchedBooks.size() == 0) {
+
+				Book book = new Book();
+				book.isbn = inputValues[0];
+				book.title = inputValues[1];
+				book.author = inputValues[2];
+				book.publisher = inputValues[3];
+				book.year = inputValues[4];
+
+				synchronized(library) {
+					library.add(book);
+				}
+				submitStatus = "Book successfully submitted";
+			} 
+			else {
+				submitStatus = "Book with submitted ISBN already exists";
+			} 
+
+		} catch (Exception e) { 
+			submitStatus = "Error occured with adding Book";
 		}
+
+		return submitStatus;
 	}
 
 
 
-	public void updateBook(String isbn, String[] inputValues) {
-
-		String[] inputTypes = {isbn,"","","",""};
-
-		List<Book> booksToUpdate = new ArrayList<Book>(searchLibrary(inputTypes,inputValues));
-
-		Book currentBook = booksToUpdate.get(0);
-		currentBook.title = "lol";
-	}
 
 
+	public String updateBook(String[] inputValues) {
 
-	public void getBook(String[] inputTypes, String[] inputValues) {
+		String updateStatus;
+		String[] inputTypes = {inputValues[0],"","","",""};
+
 		try {
 			synchronized(library) {
+				List<Book> booksToUpdate = new ArrayList<Book>(searchLibrary(inputTypes, inputValues));
+		
+				if (booksToUpdate.size() > 1){
+					updateStatus = "Error occured as multiple books have same ISBN";
+				}
+				else if (booksToUpdate.size() == 0){
+					updateStatus = "No matching books found";
+				}
+				else if (booksToUpdate.size() == 1){
 
-				List<Book> foundBooks = new ArrayList<Book>(searchLibrary(inputTypes,inputValues));
-
-				for (int i = 0; i < foundBooks.size(); i++){
-
-					Book currentBook = foundBooks.get(i);
-					currentBook.printBook();
+					Book currentBook = booksToUpdate.get(0);
+					for (int j = 0; j < 5; j++) {
+						if (currentBook.index(j) != "") {	
+							switch(j) {
+								//case 0: currentBook.isbn = inputValues[0]; break;
+								case 1: currentBook.title = inputValues[1]; break;
+								case 2: currentBook.author = inputValues[2]; break;
+								case 3:	currentBook.publisher = inputValues[3]; break;
+								case 4: currentBook.year = inputValues[4]; break;
+							}
+						}
+					}
+					updateStatus = "Book match found and updated";
+				}
+				else {
+					updateStatus = "Error occured on update";
 				}
 			}
-			
 		} catch (Exception e) {
-			System.err.println(e);
+			updateStatus = "Error occured on update";
 		}
+
+		return updateStatus;
 	}
 
 
 
-	public void removeBook(int index) {
+
+
+	public List getBook(String[] inputTypes, String[] inputValues) {
+		List<Book> foundBooks = new ArrayList<Book>();
+
 		try {
 			synchronized(library) {
-				library.remove(index);
+				foundBooks = searchLibrary(inputTypes,inputValues);
 			}
+
 		} catch (Exception e) {
 			System.err.println(e);
 		}
+
+		return foundBooks;
 	}
+
+
+
+
+
+	public String removeBook(String[] inputValues) {
+
+		String removeStatus = "Trying remove";
+
+		try {
+			synchronized(library) {
+				List<Book> foundBooks = new ArrayList<Book>(searchLibrary(inputValues, inputValues));
+
+				if (foundBooks.size() > 0) {
+
+					for (int i = 0; i < foundBooks.size(); i++) {
+						Book currentBook = foundBooks.get(i);
+						currentBook.printBook();
+
+						for (int j = 0; j < library.size(); j++) {
+							if (library.get(j).equals(currentBook)) {
+								library.remove(j);
+							}
+						}
+
+						removeStatus = "Books successfully removed";
+					}
+				}
+				else if (foundBooks.size() <= 0){
+					removeStatus = "No matching books found";
+				}
+			}
+		} catch (Exception e) {
+			removeStatus = "Error occured on remove";
+		}
+
+		return removeStatus;
+	}
+
+
 
 
 
@@ -115,6 +194,8 @@ public class Library {
 
 
 
+
+
 	public List searchLibrary(String[] inputTypes, String[] inputValues) {
 
 		List<Book> matchedBooks = new ArrayList<Book>();
@@ -126,35 +207,27 @@ public class Library {
 			}
 		}
 
-		System.out.println(Arrays.toString(inputTypes));
-		System.out.println(Arrays.toString(checkArray));
-		System.out.println("Test against: " + Arrays.toString(inputValues));
+		// System.out.println(Arrays.toString(inputTypes));
+		// System.out.println(Arrays.toString(checkArray));
+		// System.out.println("Test against: " + Arrays.toString(inputValues));
 
-		try{
-			synchronized(library) {
-				for (int i = 0; i < library.size(); i++) {
+		for (int i = 0; i < library.size(); i++) {
 
-					Book currentBook = library.get(i);
-					boolean match = true;
+			Book currentBook = library.get(i);
+			boolean match = true;
 
-					for (int j = 0; j < 5; j++) {
-
-						if (checkArray[j] && inputValues[j] != currentBook.index(j)) {
-							match = false;
-						}
-					}
-
-					if (match) {
-						matchedBooks.add(currentBook);
-					}
-
+			for (int j = 0; j < 5; j++) {
+				if (checkArray[j] && !inputValues[j].equals(currentBook.index(j)))  {
+					match = false;
 				}
 			}
 
-		} catch (Exception e) {
-			System.err.println(e);
+			if (match) {
+				matchedBooks.add(currentBook);
+			}
 		}
 
+		System.out.println("size of matchbook: "+ matchedBooks.size());
 		return matchedBooks;
 	}
 }

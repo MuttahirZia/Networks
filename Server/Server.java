@@ -6,11 +6,14 @@ public class Server {
 
 	public static Library lib;
 
-	public static void main(String args[]) {
-		try {			
+	public static void main(String[] args) {
+
+		try {		
+
 			lib = new Library();
-			
-			ServerSocket serverSocket = new ServerSocket(4444); //TODO change to variable
+
+			int port = Integer.parseInt(args[0]);	
+			ServerSocket serverSocket = new ServerSocket(port); //TODO change to variable
 			
 			while (true) {
 				Socket clientSocket = serverSocket.accept();
@@ -18,7 +21,7 @@ public class Server {
 				new Thread(new ServerThread(clientSocket)).start();
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.err.println(e);
 		}
 	}

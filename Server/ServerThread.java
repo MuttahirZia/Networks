@@ -14,6 +14,7 @@ public class ServerThread extends Server implements Runnable {
 			// DataInputStream inStream = new DataInputStream(socket.getInputStream());
 			PrintStream outStream = new PrintStream(socket.getOutputStream());
 			ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
+			ObjectOutputStream ooStream = new ObjectOutputStream(socket.getOutputStream());
 
             String[] line = (String[])inStream.readObject();
             System.out.println("String is: '" + Arrays.toString(line) + "'");
@@ -43,6 +44,9 @@ public class ServerThread extends Server implements Runnable {
 					lib.displayLibrary();
 				}
 
+				if (line[0].equals("Get")) {
+					ooStream.writeObject(lib.getBook(values));
+				}
 
 	            line = (String[])inStream.readObject();
 

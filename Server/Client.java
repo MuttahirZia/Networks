@@ -34,6 +34,7 @@ public class Client extends JFrame implements ActionListener {
 	Socket socket;
 	DataInputStream inStream;
 	ObjectOutputStream outStream;
+	ObjectInputStream oiStream;
 
 
 	public Client () {
@@ -145,7 +146,6 @@ public class Client extends JFrame implements ActionListener {
 				success = verifyRemove();
 
 				if (success) {
-					System.out.println ("Removing from library");
 					lib_action ("Remove");
 
 				} else {
@@ -156,8 +156,7 @@ public class Client extends JFrame implements ActionListener {
 				valid = validISBN(isbn.getText());
 
 				if (success && valid) {
-					 System.out.println ("Updating library");
-					 lib_action ("Update");
+					lib_action ("Update");
 
 				} else {
 					throw new Exception ("A valid ISBN and minimum one other field must be filled to update a book in the library.");
@@ -167,12 +166,12 @@ public class Client extends JFrame implements ActionListener {
 					valid = validISBN (isbn.getText());
 
 					if (valid) {
-						System.out.println ("Get");
+						get_action("Get");
 					} else {
 						throw new Exception ("You need a valid ISBN if you want to search for something, or search for nothing to get all.");
 					}
 				} else {
-					System.out.println ("Get all");
+					get_action ("Get");
 				}
 			}
 		} catch (Exception x) {
@@ -190,11 +189,33 @@ public class Client extends JFrame implements ActionListener {
 
 			outStream.writeObject(input);
 			status = inStream.readLine();
-			
-			System.out.println(status);
+
+			JOptionPane.showMessageDialog(null, status);
+			//System.out.println(status);
 
 		} catch(Exception e) {
-			System.err.println(e);
+			System.out.println (e.getMessage());
+		}
+	}
+
+	public void get_action (String action) {
+		String [] input = {"Get", isbn.getText(), title.getText(), author.getText(), publisher.getText(), year.getText()};
+
+		try{
+			String status;
+			
+			outStream.writeObject(input);
+			String [][] ret = (String[][])oiStream.readObject();
+
+			int j = 0;
+			while(ret[j] != null) {
+				System.out.println (ret[j][0] + " , " + ret[j][1] + " , " + ret[j][2] + " , " + ret[j][3] + 
+					" , " + ret[j][4]);
+				j++;
+			}
+
+		} catch(Exception e) {
+			//JOptionPane.showMessageDialog(null, status, "Server Message");
 		}
 
 	}
@@ -270,6 +291,7 @@ public class Client extends JFrame implements ActionListener {
 			socket = new Socket("localhost", Integer.parseInt(port));
 			inStream = new DataInputStream(socket.getInputStream());
 			outStream = new ObjectOutputStream(socket.getOutputStream());
+			oiStream = new ObjectInputStream(socket.getInputStream());
 			return true;
 
 	    } catch (Exception e) {

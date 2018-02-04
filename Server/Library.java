@@ -121,19 +121,40 @@ public class Library {
 
 
 
-	public List getBook(String[] inputTypes, String[] inputValues) {
+	public String[][] getBook(String[] inputValues) {
 		List<Book> foundBooks = new ArrayList<Book>();
-
+		String[][] returnVal;
 		try {
 			synchronized(library) {
-				foundBooks = searchLibrary(inputTypes,inputValues);
+				foundBooks = searchLibrary(inputValues,inputValues);
+
+				if (foundBooks.size() < 1) {
+					returnVal = new String[0][];
+				} else {
+					returnVal = new String[foundBooks.size()][5];
+					
+					for (int i = 0; i < foundBooks.size(); i++) {
+						Book currentBook = foundBooks.get(i);
+
+						returnVal[i][0] = currentBook.isbn;
+						returnVal[i][1] = currentBook.title;
+						returnVal[i][2] = currentBook.author;
+						returnVal[i][3] = currentBook.publisher;
+						returnVal[i][4] = currentBook.year;
+					}
+					for (int j = 0; j < foundBooks.size(); j++) {
+						System.out.println(Arrays.toString(returnVal[j]));
+					}
+				}
 			}
 
 		} catch (Exception e) {
 			System.err.println(e);
+			returnVal = new String[0][];
 		}
 
-		return foundBooks;
+
+		return returnVal;
 	}
 
 
@@ -180,6 +201,7 @@ public class Library {
 
 	public void displayLibrary() {
 
+		System.out.println("Display:");
 		try{
 			synchronized(library) { //needed?
 				for (int i = 0; i < library.size(); i++) {
@@ -201,15 +223,19 @@ public class Library {
 		List<Book> matchedBooks = new ArrayList<Book>();
 
 		boolean[] checkArray = new boolean[] {false,false,false,false,false};
+		boolean getAll = true;
+
 		for (int k = 0; k < 5; k++) {
-			if (inputTypes[k] != "") {
-				checkArray[k] = true; 
+			if (inputTypes[k].trim().length() != 0) {
+				checkArray[k] = true;
+				getAll = false; 
 			}
 		}
 
-		// System.out.println(Arrays.toString(inputTypes));
-		// System.out.println(Arrays.toString(checkArray));
-		// System.out.println("Test against: " + Arrays.toString(inputValues));
+		System.out.println(getAll);
+		System.out.println(Arrays.toString(inputTypes));
+		System.out.println(Arrays.toString(checkArray));
+		System.out.println("Test against: " + Arrays.toString(inputValues));
 
 		for (int i = 0; i < library.size(); i++) {
 
@@ -222,12 +248,12 @@ public class Library {
 				}
 			}
 
-			if (match) {
+			if (match || getAll) {
 				matchedBooks.add(currentBook);
 			}
 		}
 
-		System.out.println("size of matchbook: "+ matchedBooks.size());
+		System.out.println("Size of matchbook: "+ matchedBooks.size());
 		return matchedBooks;
 	}
 }

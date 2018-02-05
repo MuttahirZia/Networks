@@ -9,6 +9,7 @@ public class Library {
 		library = Collections.synchronizedList(new ArrayList<Book>());
 	}
 
+	//books containing info sorted within library
 	public class Book {
 		String isbn;
 		String title;
@@ -16,12 +17,14 @@ public class Library {
 		String publisher;
 		String year;
 
+		//print out a book contents
 		private void printBook() {
 			System.out.println(
 				this.isbn + " " + this.title + " " + 
 				this.author + " " + this.publisher + " " + this.year);
 		}
 
+		//returns value at giving index
 		private String index(int n) {
 			String output = "";
 			switch (n) {
@@ -38,7 +41,7 @@ public class Library {
 
 
 
-
+	//search library for book submitted and create it if it doesnt already exist
 	public String submitBook(String[] inputValues) {
 
 		String submitStatus;
@@ -76,7 +79,7 @@ public class Library {
 
 
 
-
+	//given an books ISBN find if match exists if so update its contents
 	public String updateBook(String[] inputValues) {
 
 		String updateStatus;
@@ -90,7 +93,7 @@ public class Library {
 					updateStatus = "Error occured as multiple books have same ISBN";
 				}
 				else if (booksToUpdate.size() == 0) {
-					updateStatus = "No matching books found";
+					updateStatus = "No books found";
 				}
 				else if (booksToUpdate.size() == 1) {
 
@@ -119,6 +122,9 @@ public class Library {
 	}
 
 
+
+
+	//return all the books that match the given info
 	public String[][] getBook(String[] inputValues) {
 		List<Book> foundBooks = new ArrayList<Book>();
 		String[][] returnVal;
@@ -157,7 +163,7 @@ public class Library {
 
 
 
-
+	//remove books that match given info
 	public String removeBook(String[] inputValues) {
 
 		String removeStatus = "Trying remove";
@@ -195,7 +201,7 @@ public class Library {
 
 
 
-
+	//print entire library
 	public void displayLibrary() {
 
 		System.out.println("Display:");
@@ -214,7 +220,7 @@ public class Library {
 
 
 
-
+	//parse library and return list of matched books based on the input info
 	public List searchLibrary(String[] inputTypes, String[] inputValues) {
 
 		List<Book> matchedBooks = new ArrayList<Book>();

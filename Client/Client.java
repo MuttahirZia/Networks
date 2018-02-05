@@ -5,10 +5,13 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class Client extends JFrame implements ActionListener {
+	//Initialize the textfields, labels, and panels for frame
 	JTextField inp = new JTextField ();
+	JTextField inp2 = new JTextField ();
 	JButton conn = new JButton("Connect");
 	JButton help = new JButton ("Instructions");
 	JLabel label1 = new JLabel("Port Number:");
+	JLabel ip = new JLabel ("IP Address");
 	JFrame frame1 = new JFrame ("Connection");
 	JPanel connection = new JPanel ();
 	JPanel interact = new JPanel ();
@@ -36,19 +39,33 @@ public class Client extends JFrame implements ActionListener {
 	ObjectOutputStream outStream;
 	ObjectInputStream oiStream;
 
-
+	/* Create two panels, one for connection and one for client interaction. Add panels to frame, 
+	but set only the connection one to be visible at the start.
+	*/
 	public Client () {
 		setLayout(new FlowLayout());	
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(400,250);
+		setSize(550,275);
 		setTitle ("Client Connection");
+
+		connection.setLayout(new GridLayout (3, 2, 10, 10));
+
+		ip.setPreferredSize(new Dimension(100,30));
+		connection.add(ip);
+
+		inp2.setPreferredSize(new Dimension(150,30));
+		connection.add (inp2);
 
 		label1.setPreferredSize(new Dimension(100,30));
 		connection.add(label1);
 
-		inp.setPreferredSize(new Dimension(100,30));
+		inp.setPreferredSize(new Dimension(150,30));
 		connection.add (inp);
-		
+
+		help.setPreferredSize(new Dimension(150, 30));
+		help.addActionListener(this);
+		connection.add(help); 
+
 		conn.setPreferredSize(new Dimension(150, 30));
 		conn.addActionListener(this);
 		connection.add(conn); 
@@ -72,6 +89,12 @@ public class Client extends JFrame implements ActionListener {
 		l4.setPreferredSize(new Dimension (50, 25));
 		l5.setPreferredSize(new Dimension (50, 25));
 		l6.setPreferredSize(new Dimension (50, 25));
+
+		isbn.setPreferredSize(new Dimension (150, 30));
+		title.setPreferredSize(new Dimension (150, 30));
+		author.setPreferredSize(new Dimension (150, 30));
+		publisher.setPreferredSize(new Dimension (150, 30));
+		year.setPreferredSize(new Dimension (150, 30));
 
 		interact.add (l2);
 		interact.add (isbn);
@@ -102,18 +125,21 @@ public class Client extends JFrame implements ActionListener {
 		
 	}
 
+	/* When user hits a button, come to actionPerformed
+	*/
 	public void actionPerformed (ActionEvent e) {
 		String command = e.getActionCommand();
-		//System.out.println(command);
+		//Determine which action was specified
 		boolean success;
 		boolean valid;
 
 		try {
+			//If connect, try and connect to server and switch panel if successful
 			if (command.equals("Connect")) {
 				if (inp.getText().length() == 0) {
 					throw new Exception ("Need to enter in a port number.");
 				}
-				success = connectClient(address, inp.getText());
+				success = connectClient(inp2.getText(), inp.getText());
 
 				if (success == true) {
 					System.out.println ("Connection made.");
@@ -124,7 +150,16 @@ public class Client extends JFrame implements ActionListener {
 				} else {
 					throw new Exception ("Wrong port number or unable to connect to server.");
 				}
+			} else if (command.equals ("Instructions")) {
+				//Show instructions if instructions entered
+				String message = "Enter in the IP Address and port number for the server. Then, go through the process of adding, updating, \n" + 
+					"removing, and searching the library for books. If you enter in invalid or insufficient information while \n" +
+					"doing these operations, you will be prompted to correct your inputs. If correct information is entered, the \n" +
+					"server will return whether the operation was completed sucessfully or why it failed.";
+				JOptionPane.showMessageDialog(null, message, "Message", JOptionPane.INFORMATION_MESSAGE);	
+
 			} else if (command.equals ("Disconnect")) {
+				//Disconnect from server and switch back to connection panel
 				outStream.close();
 				inStream.close();
 				socket.close();
@@ -132,6 +167,7 @@ public class Client extends JFrame implements ActionListener {
 				interact.setVisible(false);
 				connection.setVisible(true);
 			} else if (command.equals ("Submit")) {
+				//If submit clicked, check to make sure have required fields, and if it is go to server to add else throw exception
 				success = verifySubmit ();
 				valid = validISBN(isbn.getText());
 
@@ -143,23 +179,24 @@ public class Client extends JFrame implements ActionListener {
 					throw new Exception ("You need to specify a valid ISBN, title, and author to add a book to the library");
 				}
 			} else if (command.equals ("Remove")) {
-				success = verifyRemove();
-
-				if (success) {
-					String ObjButtons[] = {"Yes","No"};
-    				int PromptResult = JOptionPane.showOptionDialog(null, 
-        				"Are you sure you want to remove from the database?", "Confirmation", 
-        				JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, 
-       					ObjButtons,ObjButtons[1]);
-    				
-    				if(PromptResult==0) {
-     					lib_action ("Remove");       
-    				}
-
-				} else {
-					throw new Exception ("You need to specify at least one field correctly (i.e. ISBN) in order to remove books from the library");
+				//If remove clicked, check to make sure have required fields, and if it is go to server or else throw exception
+				//If get clicked, check to make sure have required fields, and if it is go to server or else throw exception
+				
+				if (isbn.getText().length() != 0) {
+					valid = validISBN (isbn.getText());
+					if (!valid) {
+						throw new Exception ("You've entered an invalid ISPN. Please retry.");
+					} else {
+						success = verifyRemove();
+						if (success) {
+							lib_action ("Remove");					
+						} 
+					}
 				}
+
+				
 			} else if (command.equals("Update")) {
+				//If update clicked, check to make sure have required fields, and if it is go to server or else throw exception
 				success = verifyUpdate ();
 				valid = validISBN(isbn.getText());
 
@@ -170,6 +207,7 @@ public class Client extends JFrame implements ActionListener {
 					throw new Exception ("A valid ISBN and minimum one other field must be filled to update a book in the library.");
 				}
 			} else if (command.equals ("Get")) {
+				//If get clicked, check to make sure have required fields, and if it is go to server or else throw exception
 				if (isbn.getText().length() != 0) {
 					valid = validISBN (isbn.getText());
 
@@ -187,6 +225,8 @@ public class Client extends JFrame implements ActionListener {
 		}
 	}
 
+	/* If update, add, or remove entered go to server and do operation. Return successful or failure message
+	*/
 	public void lib_action (String action) {
 		String [] input = {action, isbn.getText(), title.getText(), author.getText(), publisher.getText(), year.getText()};
 		//System.out.println (input[0] + " , " + input[1] + " , " + input[2] + " , " + input[3] + 
@@ -206,6 +246,8 @@ public class Client extends JFrame implements ActionListener {
 		}
 	}
 
+	/* If get action clicked, go to server and return relevant search. Display the search results in special window 
+	*/
 	public void get_action (String action) {
 		String [] input = {"Get", isbn.getText(), title.getText(), author.getText(), publisher.getText(), year.getText()};
 		String results = "";
@@ -237,7 +279,7 @@ public class Client extends JFrame implements ActionListener {
 			//JOptionPane.showMessageDialog(null, e.getMessage(), "Fixing Message", JOptionPane.ERROR_MESSAGE);
 		}
 
-		System.out.println (results);
+		//System.out.println (results);
 		
 		if (results.length() != 0) {
 			JTextArea textArea = new JTextArea(20, 50);
@@ -254,6 +296,8 @@ public class Client extends JFrame implements ActionListener {
       	}
 	}
 
+	/* Make sure valid fields have been entered for submit 
+	*/
 	public boolean verifySubmit () {
 		if (title.getText().trim().length()==0 || author.getText().trim().length()==0) {
 			return false;
@@ -262,17 +306,24 @@ public class Client extends JFrame implements ActionListener {
 		}
 	}
 
+	/* Make sure valid fields have been entered for remove 
+	*/
 	public boolean verifyRemove () {
-		if (isbn.getText().length() ==0 && (title.getText().trim().length()==0 && author.getText().trim().length()==0
-		 && year.getText().trim().length()==0 && publisher.getText().trim().length()==0)) {
-			return false;
-		} else if (isbn.getText().length() != 0 && validISBN(isbn.getText()) ==false) {
-			return false;
-		} else {
-			return true;
-		}
+		String ObjButtons[] = {"Yes","No"};
+    	int PromptResult = JOptionPane.showOptionDialog(null, 
+   			"Are you sure you want to remove from the database? \nIf no parameters are specified, then ALL books will be removed.", "Confirmation", 
+        	JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, 
+    		ObjButtons,ObjButtons[1]);
+    				
+    	if(PromptResult==0) {
+     		return true;       
+    	} else {
+    		return false;
+    	}
 	}
 
+	/* Make sure valid fields have been entered for update 
+	*/
 	public boolean verifyUpdate () {
 		if (validISBN(isbn.getText()) ==false || (title.getText().trim().length()==0 && author.getText().trim().length()==0
 		 && year.getText().trim().length()==0 && publisher.getText().trim().length()==0)) {
@@ -286,6 +337,8 @@ public class Client extends JFrame implements ActionListener {
 		new Client();
 	}
 
+	/* Make sure valid ISBN entered
+	*/
 	public boolean validISBN (String code) {
 		if ( code == null ) {
             return false;
@@ -320,6 +373,8 @@ public class Client extends JFrame implements ActionListener {
         }
 	}
 
+	/* Try and connect to client given IP address and port number. 
+	*/
 	public boolean connectClient(String address, String port) {
 		try {
 			socket = new Socket(address, Integer.parseInt(port));

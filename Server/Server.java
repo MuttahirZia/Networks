@@ -10,11 +10,14 @@ public class Server {
 
 		try {		
 
+			//initialize the library once the server begins
 			lib = new Library();
 
+			//establish server socket with specified port
 			int port = Integer.parseInt(args[0]);	
 			ServerSocket serverSocket = new ServerSocket(port);
 			
+			//server listens for new clients to accept and creates new threads for them
 			while (true) {
 				Socket clientSocket = serverSocket.accept();
 
@@ -22,7 +25,7 @@ public class Server {
 			}
 
 		} catch (Exception e) {
-			System.err.println("Error occured on server");
+			System.err.println("Error with establishing server or incorrect port parameters entered");
 		}
 	}
 }

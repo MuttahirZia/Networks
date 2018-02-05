@@ -43,9 +43,13 @@ public class Library {
 
 		String submitStatus;
 		String[] inputTypes = {inputValues[0],"","","",""};
-		List<Book> matchedBooks = new ArrayList<Book>(searchLibrary(inputTypes, inputValues));
-
+		List<Book> matchedBooks;
+		
 		try {
+			synchronized (library) {
+				matchedBooks = new ArrayList<Book>(searchLibrary(inputTypes, inputValues));
+			}
+
 			if (matchedBooks.size() == 0) {
 
 				Book book = new Book();
@@ -55,13 +59,11 @@ public class Library {
 				book.publisher = inputValues[3];
 				book.year = inputValues[4];
 
-				synchronized(library) {
-					library.add(book);
-				}
+				library.add(book);
 				submitStatus = "Book successfully submitted";
 			} 
 			else {
-				submitStatus = "Book with submitted ISBN already exists";
+				submitStatus = "ISBN already exists, cannot add duplicates";
 			} 
 
 		} catch (Exception e) { 
@@ -169,7 +171,6 @@ public class Library {
 
 					for (int i = 0; i < foundBooks.size(); i++) {
 						Book currentBook = foundBooks.get(i);
-						currentBook.printBook();
 
 						for (int j = 0; j < library.size(); j++) {
 							if (library.get(j).equals(currentBook)) {

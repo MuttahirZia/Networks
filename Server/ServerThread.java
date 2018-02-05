@@ -17,7 +17,6 @@ public class ServerThread extends Server implements Runnable {
 			ObjectOutputStream ooStream = new ObjectOutputStream(socket.getOutputStream());
 
             String[] line = (String[])inStream.readObject();
-            //System.out.println("String is: '" + Arrays.toString(line) + "'");
 
 
 			boolean running = true;
@@ -29,17 +28,14 @@ public class ServerThread extends Server implements Runnable {
 
 				if (line[0].equals("Submit")) {
 					outStream.println(lib.submitBook(values));
-					lib.displayLibrary();
 				}
 
 				if (line[0].equals("Remove")) {
 					outStream.println(lib.removeBook(values));
-					lib.displayLibrary();
 				}
 
 				if (line[0].equals("Update")) {
 					outStream.println(lib.updateBook(values));
-					lib.displayLibrary();
 				}
 
 				if (line[0].equals("Get")) {
@@ -49,11 +45,10 @@ public class ServerThread extends Server implements Runnable {
 	            line = (String[])inStream.readObject();
 			} 
 
-			
 			socket.close();
 
 		} catch (Exception e) {
-			System.err.println(e);
+			System.err.println("A client disconnected");
 		}
 	}
 }

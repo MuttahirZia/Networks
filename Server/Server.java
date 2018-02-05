@@ -22,7 +22,7 @@ public class Server {
 			}
 
 		} catch (Exception e) {
-			System.err.println(e);
+			System.err.println("Error occured on server");
 		}
 	}
 }

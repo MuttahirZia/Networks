@@ -113,7 +113,7 @@ public class Client extends JFrame implements ActionListener {
 				if (inp.getText().length() == 0) {
 					throw new Exception ("Need to enter in a port number.");
 				}
-				success = test (inp.getText());
+				success = connectClient(address, inp.getText());
 
 				if (success == true) {
 					System.out.println ("Connection made.");
@@ -122,7 +122,7 @@ public class Client extends JFrame implements ActionListener {
 					interact.setVisible(true);
 
 				} else {
-					throw new Exception ("Wrong port number. Cannot connect to server.");
+					throw new Exception ("Wrong port number or unable to connect to server.");
 				}
 			} else if (command.equals ("Disconnect")) {
 				outStream.close();
@@ -215,14 +215,6 @@ public class Client extends JFrame implements ActionListener {
 			
 			outStream.writeObject(input);
 			String [][] ret = (String[][])oiStream.readObject();
-
-// 			@book {Boole2009,
-//     AUTHOR = {Boole, George},
-//      TITLE = {A Treatise on the Calculus of Finite Differences},
-//  PUBLISHER = {Cambridge University Press},
-//       YEAR = {2009},
-//       ISBN = {978-1-108-00092-5},
-// }
 
 			int j = 0;
 			while(ret[j] != null) {
@@ -328,9 +320,9 @@ public class Client extends JFrame implements ActionListener {
         }
 	}
 
-	public boolean test(String port) {
+	public boolean connectClient(String address, String port) {
 		try {
-			socket = new Socket("localhost", Integer.parseInt(port));
+			socket = new Socket(address, Integer.parseInt(port));
 			inStream = new DataInputStream(socket.getInputStream());
 			outStream = new ObjectOutputStream(socket.getOutputStream());
 			oiStream = new ObjectInputStream(socket.getInputStream());

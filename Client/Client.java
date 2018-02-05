@@ -192,6 +192,8 @@ public class Client extends JFrame implements ActionListener {
 							lib_action ("Remove");					
 						} 
 					}
+				} else {
+					lib_action("Remove");
 				}
 
 				

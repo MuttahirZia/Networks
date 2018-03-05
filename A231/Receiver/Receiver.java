@@ -24,13 +24,14 @@ public class Receiver {
     		DatagramPacket dp = new DatagramPacket(buf, 1024);  
 			dataSocket.receive(dp);
 			String str = new String(dp.getData(), 0, dp.getLength());  
-    		System.out.println(str);
-    		dataSocket.receive(dp);
-			str = new String(dp.getData(), 0, dp.getLength());  
-    		System.out.println(str);
-    		dataSocket.receive(dp);
-			str = new String(dp.getData(), 0, dp.getLength());  
-    		System.out.println(str);
+    		System.out.println(str + "\n");
+
+   //  		dataSocket.receive(dp);
+			// str = new String(dp.getData(), 0, dp.getLength());  
+   //  		System.out.println(str  + "\n");
+   //  		dataSocket.receive(dp);
+			// str = new String(dp.getData(), 0, dp.getLength());  
+   //  		System.out.println(str  + "\n");
 
 
     		//send ack packet

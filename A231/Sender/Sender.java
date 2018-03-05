@@ -17,32 +17,44 @@ public class Sender {
 			// //receive ACKs from the receiver>
 			// int ackPort = Integer.parseInt(args[2]);
 			// //<name of the file to be transferred>
-			String filename = "test.txt";
+			String fileName = "test.txt";
 			// //args[3];
 			// //<timeout> integer number for timeout (in microseconds)	
 			// int timeout = Integer.parseInt(args[4]);
 
 
-			Scanner s = new Scanner(filename);
-
-
+			byte[] buffer = new byte[124];
+            FileInputStream inputStream = new FileInputStream(fileName);
+			//inputStream.read(buffer);
 
 			//create datagramSocket
-			DatagramSocket dataSocket = new DatagramSocket();
-			//send data through
-			DatagramSocket ackSocket = new DatagramSocket(4445); 
-			//receive acks through
+			DatagramSocket dataSocket = new DatagramSocket();//send data through
+			DatagramSocket ackSocket = new DatagramSocket(4445);//receive acks through
 
 
 			//create packets
-			String test = "dp received: hello this is a test... testing testing testing";
 			InetAddress ip = InetAddress.getLocalHost(); 
-			DatagramPacket dp = new DatagramPacket(test.getBytes(), 0, 124, ip, 4444);
-			dataSocket.send(dp);
-			dp = new DatagramPacket(test.getBytes(), 20, 20, ip, 4444);
-			dataSocket.send(dp);
-			dp = new DatagramPacket(test.getBytes(), 40, 20, ip, 4444);
-			dataSocket.send(dp);
+			DatagramPacket dp;
+
+			Boolean notEnd = true;
+			int i;
+
+			while(notEnd) {
+				
+				if ((i = inputStream.read(buffer)) == -1) {
+					notEnd = false;
+				}
+
+				dp = new DatagramPacket(buffer, 124, ip, 4444);
+				dataSocket.send(dp);
+
+
+				buffer = new byte[124];
+				System.out.println(i);
+
+			}
+			
+
 
 			//receive ack
 			byte[] buf = new byte[1024];
@@ -54,6 +66,7 @@ public class Sender {
 
 			dataSocket.close();
 			ackSocket.close();
+			inputStream.close();
 
 		} catch(Exception e) {
 

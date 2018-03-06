@@ -92,6 +92,12 @@ public class Sender {
                 	}
                 }
             }
+
+			String EOTstring = ">>EOT<<";
+			//buffer = EOTstring.getBytes();
+
+			dp = new DatagramPacket(EOTstring.getBytes(), EOTstring.length(), ip, 4444);
+			dataSocket.send(dp);
 			
 
 			dataSocket.close();

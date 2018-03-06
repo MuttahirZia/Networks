@@ -13,6 +13,8 @@ public class Receiver extends JFrame implements ActionListener {
 	JLabel l2 = new JLabel ("Sender port number: ");
 	JLabel l3 = new JLabel ("Receiver port number: ");
 	JLabel l4 = new JLabel ("Name of output file: ");
+	JLabel l5 = new JLabel ("Number of packets received:");
+	JLabel l6 = new JLabel ("");
 
 	JTextField address = new JTextField ();
 	JTextField send_port = new JTextField ();
@@ -32,7 +34,7 @@ public class Receiver extends JFrame implements ActionListener {
 		setSize(500,500);
 		setTitle ("Receiver GUI");
 
-		interact.setLayout(new GridLayout (6, 2, 20, 20));
+		interact.setLayout(new GridLayout (7, 2, 20, 20));
 		
 		transport.addActionListener (this);
 
@@ -61,6 +63,9 @@ public class Receiver extends JFrame implements ActionListener {
 
 		interact.add(two);
 		interact.add(transport);
+		
+		interact.add (l5);
+		interact.add(l6);
 
 		interact.setVisible (true);
 
@@ -83,42 +88,45 @@ public class Receiver extends JFrame implements ActionListener {
 	 }
 
 	public void accept_packets () {
-	//public static void main (String [] args) {
 		try {
 			//establish connection
 			DatagramSocket dataSocket = new DatagramSocket(4444); //send data through
 			DatagramSocket ackSocket = new DatagramSocket(); //receive acks through
 
-
 			//receive packet init
 			Boolean notEnd = true;
+			Boolean endOfTranmission = false;
 			byte[] buf;
 			DatagramPacket dp;
 			String str;
+			int count = 1;
 
 			//ack packet init
 			String testack = "ack received";
 			InetAddress ip = InetAddress.getLocalHost();
 			DatagramPacket da;
 
-			Boolean unreliableOption = false;
-
-			while(notEnd) {
+			while (notEnd) {
 
 				buf = new byte[124];  
 	    		dp = new DatagramPacket(buf, 124);
 
 				dataSocket.receive(dp);
+	    		if (!(r2.isSelected() && count % 10 == 0)) {
+					str = new String(dp.getData(), 0, dp.getLength());  
+	    			System.out.println(str + "END");
 
-				str = new String(dp.getData(), 0, dp.getLength());  
-	    		System.out.println(str + "END");
+	    			if (str.contains(">>EOT<<")) {
+	    				notEnd = false;
+	    			}
+				} 
 
-	    		//send acks for received
-	    		//if (unreliableOption && dropCount % 10) {
+				count += 1;
+				l6.setText(String.valueOf(count));
+
     			da = new DatagramPacket(testack.getBytes(), testack.length(), ip, 4445);
 				ackSocket.send(da);
-	    		//}
-				
+
 	    	}
     	
 

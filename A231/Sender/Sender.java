@@ -39,36 +39,66 @@ public class Sender {
 			Boolean notEnd = true;
 			int i;
 
-			while(notEnd) {
+			byte[] buf;
+			DatagramPacket da;
+			String strack;
+
+			Boolean next;
+
+			// while(notEnd) {
 				
-				if ((i = inputStream.read(buffer)) == -1) {
-					notEnd = false;
-				}
+			// 	if ((i = inputStream.read(buffer)) == -1) {
+			// 		notEnd = false;
+			// 	}
 
-				dp = new DatagramPacket(buffer, 124, ip, 4444);
-				dataSocket.send(dp);
+			// 	dp = new DatagramPacket(buffer, 124, ip, 4444);
+			// 	dataSocket.send(dp);
 
+			// 	buffer = new byte[124];
+			// 	System.out.println(i);
 
-				buffer = new byte[124];
-				System.out.println(i);
+			// 	//receive ack
+			// 	buf = new byte[124];
+			// 	da = new DatagramPacket(buf, 124);
+			// 	ackSocket.receive(da);
+			// 	strAck = new String(da.getData(), 0, da.getLength());  
+			// 	System.out.println(strAck);
 
-			}
+			// }
+
+			while((i = inputStream.read(buffer)) != -1) {
+
+                next = false;
+
+                while (!next) {
+                	try {
+
+                		//send data packets
+                		dp = new DatagramPacket(buffer, 124, ip, 4444);
+						dataSocket.send(dp);
+						ackSocket.setSoTimeout(10000);
+
+						//listen for ack packet
+						buf = new byte[124];
+						da = new DatagramPacket(buf, 124);
+						ackSocket.receive(da);
+						strack = new String(da.getData(), 0, da.getLength());  
+						System.out.println(strack);
+
+						next = true;
+
+                	} catch (SocketTimeoutException e) {
+                		next = false;
+                	}
+                }
+            }
 			
-
-
-			//receive ack
-			byte[] buf = new byte[1024];
-			DatagramPacket da = new DatagramPacket(buf, 1024);
-			ackSocket.receive(da);
-			String strack = new String(da.getData(), 0, da.getLength());  
-			System.out.println(strack);
-
 
 			dataSocket.close();
 			ackSocket.close();
 			inputStream.close();
 
-		} catch(Exception e) {
+		} catch (Exception e) {
 
 			System.err.println("Error in Sender main: " + e);
 		}

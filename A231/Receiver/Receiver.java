@@ -1,45 +1,126 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
-public class Receiver {
+public class Receiver extends JFrame implements ActionListener {
+	JPanel interact = new JPanel ();
+	JPanel two = new JPanel();
 
-	public static void main (String args[]) {
+	JLabel l1 = new JLabel ("Senders host address: ");
+	JLabel l2 = new JLabel ("Sender port number: ");
+	JLabel l3 = new JLabel ("Receiver port number: ");
+	JLabel l4 = new JLabel ("Name of output file: ");
 
+	JTextField address = new JTextField ();
+	JTextField send_port = new JTextField ();
+	JTextField rec_port = new JTextField ();
+	JTextField file_name = new JTextField ();
+
+	JButton transport = new JButton ("Transport");
+	
+	JRadioButton r1 = new JRadioButton("Reliable");    
+	JRadioButton r2 = new JRadioButton("Unreliable");    
+
+	ButtonGroup bg = new ButtonGroup();    
+
+	public Receiver () {
+		setLayout(new FlowLayout());	
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(500,500);
+		setTitle ("Receiver GUI");
+
+		interact.setLayout(new GridLayout (6, 2, 20, 20));
+		
+		transport.addActionListener (this);
+
+		l1.setPreferredSize(new Dimension (200, 50));
+		l2.setPreferredSize(new Dimension (200, 50));
+		l3.setPreferredSize(new Dimension (200, 50));
+		l4.setPreferredSize(new Dimension (200, 50));
+
+		interact.add (l1);
+		interact.add (address);
+		
+		interact.add (l2);
+		interact.add (send_port);
+
+		interact.add (l3);
+		interact.add (rec_port);
+
+		interact.add (l4);
+		interact.add (file_name);
+
+		bg.add(r1);
+		bg.add(r2);
+		two.add(r1);
+		two.add(r2);
+		two.setVisible(true);
+
+		interact.add(two);
+		interact.add(transport);
+
+		interact.setVisible (true);
+
+		add (interact);
+		setLocationRelativeTo (null);
+		setVisible (true);		
+	}
+
+	 public void actionPerformed (ActionEvent e) {
+	 	try {
+	 		if (address.getText().equals("") || send_port.getText().equals("") || rec_port.getText().equals("") 
+	 			|| file_name.getText().equals("") || (!r1.isSelected() && !r2.isSelected())) {
+	 			throw new Exception ("You need to enter in all fields and select secure/unsecure before transport can begin.");
+	 		} else {
+	 			accept_packets ();
+	 		}
+	 	} catch (Exception x) {
+	 		JOptionPane.showMessageDialog(null, x.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);
+	 	}
+	 }
+
+	public void accept_packets () {
+	//public static void main (String [] args) {
 		try {
-
-			//make GUI
-			//get initial values
-
-
 			//establish connection
-			DatagramSocket dataSocket = new DatagramSocket(4444);
-			//send data through
-			DatagramSocket ackSocket = new DatagramSocket(); 
-			//receive acks through
+			DatagramSocket dataSocket = new DatagramSocket(4444); //send data through
+			DatagramSocket ackSocket = new DatagramSocket(); //receive acks through
 
 
-			//receive packets
-			byte[] buf = new byte[1024];  
-    		DatagramPacket dp = new DatagramPacket(buf, 1024);  
-			dataSocket.receive(dp);
-			String str = new String(dp.getData(), 0, dp.getLength());  
-    		System.out.println(str + "\n");
+			//receive packet init
+			Boolean notEnd = true;
+			byte[] buf;
+			DatagramPacket dp;
+			String str;
 
-   //  		dataSocket.receive(dp);
-			// str = new String(dp.getData(), 0, dp.getLength());  
-   //  		System.out.println(str  + "\n");
-   //  		dataSocket.receive(dp);
-			// str = new String(dp.getData(), 0, dp.getLength());  
-   //  		System.out.println(str  + "\n");
-
-
-    		//send ack packet
-    		String testack = "ack received";
+			//ack packet init
+			String testack = "ack received";
 			InetAddress ip = InetAddress.getLocalHost();
-			DatagramPacket da = new DatagramPacket(testack.getBytes(), testack.length(), ip, 4445);
-			ackSocket.send(da);
+			DatagramPacket da;
 
+			Boolean unreliableOption = false;
+
+			while(notEnd) {
+
+				buf = new byte[124];  
+	    		dp = new DatagramPacket(buf, 124);
+
+				dataSocket.receive(dp);
+
+				str = new String(dp.getData(), 0, dp.getLength());  
+	    		System.out.println(str + "END");
+
+	    		//send acks for received
+	    		//if (unreliableOption && dropCount % 10) {
+    			da = new DatagramPacket(testack.getBytes(), testack.length(), ip, 4445);
+				ackSocket.send(da);
+	    		//}
+				
+	    	}
+    	
 
 			dataSocket.close();
 			ackSocket.close();
@@ -48,5 +129,9 @@ public class Receiver {
 
 			System.err.println("Error in Receiver main: " + e);
 		}
+	}
+
+	public static void main (String []args) {
+		new Receiver();
 	}
 }

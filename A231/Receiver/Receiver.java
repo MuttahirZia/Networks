@@ -89,8 +89,11 @@ public class Receiver extends JFrame implements ActionListener {
 
 	public void accept_packets () {
 		try {
+			int acc_port = Integer.parseInt(rec_port.getText());
+			int go_port = Integer.parseInt(send_port.getText());
+
 			//establish connection
-			DatagramSocket dataSocket = new DatagramSocket(4444); //send data through
+			DatagramSocket dataSocket = new DatagramSocket(acc_port); //send data through
 			DatagramSocket ackSocket = new DatagramSocket(); //receive acks through
 
 			//receive packet init
@@ -100,43 +103,64 @@ public class Receiver extends JFrame implements ActionListener {
 			DatagramPacket dp;
 			String str;
 			int count = 1;
+			Boolean drop = false;
 
 			//ack packet init
 			String testack = "ack received";
-			InetAddress ip = InetAddress.getLocalHost();
+			InetAddress ip = InetAddress.getByName(address.getText()); 
 			DatagramPacket da;
+
+			//create file 
+			FileOutputStream outputStream = new FileOutputStream(file_name.getText()); 
 
 			while (notEnd) {
 
 				buf = new byte[124];  
 	    		dp = new DatagramPacket(buf, 124);
 
+	    		if (count % 10 == 0 && !drop) {
+	    			drop = true;
+	    		} else {
+	    			drop = false;
+	    		}
+
 				dataSocket.receive(dp);
-	    		if (!(r2.isSelected() && count % 10 == 0)) {
+
+	    		if (!(r2.isSelected() && drop)) {
 					str = new String(dp.getData(), 0, dp.getLength());  
-	    			System.out.println(str + "END");
+	    			System.out.println(str);
+
+	    			count += 1;
+
+	    			da = new DatagramPacket(testack.getBytes(), testack.length(), ip, go_port);
+					ackSocket.send(da);
 
 	    			if (str.contains(">>EOT<<")) {
 	    				notEnd = false;
+	    			} else {
+	    				outputStream.write(dp.getData());
 	    			}
 				} 
 
-				count += 1;
 				l6.setText(String.valueOf(count));
-
-    			da = new DatagramPacket(testack.getBytes(), testack.length(), ip, 4445);
-				ackSocket.send(da);
+				redraw ();
 
 	    	}
     	
-
+	    	//clean up
 			dataSocket.close();
 			ackSocket.close();
+			outputStream.close();
 
 		} catch(Exception e) {
 
 			System.err.println("Error in Receiver main: " + e);
 		}
+	}
+
+	public void redraw () {
+		validate();
+		repaint();
 	}
 
 	public static void main (String []args) {

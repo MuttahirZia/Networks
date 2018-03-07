@@ -4,6 +4,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.nio.*;
 
 public class Receiver extends JFrame implements ActionListener {
 	JPanel interact = new JPanel ();
@@ -127,23 +128,40 @@ public class Receiver extends JFrame implements ActionListener {
 				dataSocket.receive(dp);
 
 	    		if (!(r2.isSelected() && drop)) {
-					str = new String(dp.getData(), 0, dp.getLength());  
-	    			System.out.println(str);
 
-	    			count += 1;
+	    			byte[] seqNumBuf = Arrays.copyOfRange(dp.getData(),0,4);
+	    			byte[] dataBuf = Arrays.copyOfRange(dp.getData(),4,124);
 
+    			    ByteBuffer seqByteBuffer = ByteBuffer.wrap(seqNumBuf);
+
+	    			int n = seqByteBuffer.getInt();
+
+	    			String r1 = new String(seqNumBuf, "UTF-8");
+	    			String r2 = new String(dataBuf, "UTF-8");
+
+	    			System.out.println("SEQ: " + n);
+	    			System.out.println("DATA: " + r2);
+
+
+	    			//send ack to sender
 	    			da = new DatagramPacket(testack.getBytes(), testack.length(), ip, go_port);
 					ackSocket.send(da);
 
-	    			if (str.contains(">>EOT<<")) {
+
+					//check for end of transmission
+	    			if (r2.contains(">>EOT<<")) {
 	    				notEnd = false;
 	    			} else {
-	    				outputStream.write(dp.getData());
+	    				outputStream.write(dataBuf);
+		    			count += 1;		
 	    			}
+
+	    			seqNumBuf = new byte[4];
+	    			dataBuf = new byte[120];
 				} 
 
-				l6.setText(String.valueOf(count));
-				redraw ();
+				// l6.setText(String.valueOf(count));
+				// redraw ();
 
 	    	}
     	

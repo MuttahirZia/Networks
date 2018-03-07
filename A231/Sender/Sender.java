@@ -1,10 +1,13 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.nio.*;
 
 public class Sender {
 
 	public static void main(String[] args) {
+
+		final int packetSize = 124;
 
 		try {
 
@@ -21,7 +24,7 @@ public class Sender {
 
 
 			//read file and fill buffer with file contents
-			byte[] buffer = new byte[124];
+			byte[] buffer = new byte[120];
             FileInputStream inputStream = new FileInputStream(fileName);
 
 			//create datagramSocket
@@ -31,13 +34,16 @@ public class Sender {
 			//create packets
 			InetAddress ip = InetAddress.getByName(address); 
 			DatagramPacket dp;
-			int packetSize = 124;
 			Boolean notEnd = true;
 			int i;
 			Boolean next;
 			byte[] buf;
 			DatagramPacket da;
 			String strack;
+
+			int sequenceNumber = 0;
+			byte[] seqNumBuf = new byte[4];
+			byte[] packetBuffer;// = new byte[packetSize];
 
 			//begin main sending loop
 			while((i = inputStream.read(buffer)) != -1) {
@@ -48,12 +54,19 @@ public class Sender {
                 	try {
 
                 		//send data packets
-                		dp = new DatagramPacket(buffer, packetSize, ip, dataPort);
+                		seqNumBuf = ByteBuffer.allocate(4).putInt(sequenceNumber).array();
+                		//add byte[]s
+						packetBuffer = new byte[seqNumBuf.length + buffer.length];
+						System.arraycopy(seqNumBuf, 0, packetBuffer, 0, seqNumBuf.length);
+						System.arraycopy(buffer, 0, packetBuffer, seqNumBuf.length, buffer.length);
+
+
+                		dp = new DatagramPacket(packetBuffer, packetSize, ip, dataPort);
 						dataSocket.send(dp);
 						ackSocket.setSoTimeout(timeout);//timeout);
 
 						//listen for acknowledgemnt packet
-						buf = new byte[124];
+						buf = new byte[packetSize];
 						da = new DatagramPacket(buf, packetSize);
 						ackSocket.receive(da);
 
@@ -71,22 +84,24 @@ public class Sender {
                 	}
                 }
 
-                buffer = new byte[124];
+                buffer = new byte[packetSize];
+                sequenceNumber++;
+
             }
 
             //send end of transmission
-			String EOTstring = ">>EOT<<";
+			String EOTstring = "    >>EOT<<";
 			dp = new DatagramPacket(EOTstring.getBytes(), EOTstring.length(), ip, dataPort);
 			dataSocket.send(dp);
 
 			//receive acknowledgement for end of transmission
-			buf = new byte[124];
+			buf = new byte[packetSize];
 			da = new DatagramPacket(buf, packetSize);
 			ackSocket.receive(da);
 
 			//display end of transmission acknowledgemnt
 			strack = new String(da.getData(), 0, da.getLength());  
-			System.out.println(strack + "EOT");
+			System.out.println(strack + " EOT");
 
 			//add timeout for eot
 			

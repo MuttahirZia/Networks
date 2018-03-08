@@ -73,4 +73,8 @@ public class GUI extends JFrame {
 		frame.setLocationRelativeTo (null);
 		frame.setVisible (true);		
 	}
+
+	public void finished () {
+		JOptionPane.showMessageDialog(null, "Output written to file.");
+	}
 }

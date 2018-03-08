@@ -40,7 +40,7 @@ public class Transport implements Runnable {
 			FileOutputStream outputStream = new FileOutputStream(client.file_name.getText()); 
 
 			while (notEnd) {
-				
+
 				buf = new byte[124];  
 	    		dp = new DatagramPacket(buf, 124);
 
@@ -94,5 +94,7 @@ public class Transport implements Runnable {
 		} catch(Exception e) {
 			System.err.println("Error in Receiver main: " + e);
 		}
+
+	client.finished();
 	}
 }

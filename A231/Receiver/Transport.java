@@ -40,9 +40,6 @@ public class Transport implements Runnable {
 			FileOutputStream outputStream = new FileOutputStream(client.file_name.getText()); 
 
 			while (notEnd) {
-				client.l6.setText("" + count);
-				client.frame.validate();
-				client.frame.repaint();
 				
 				buf = new byte[124];  
 	    		dp = new DatagramPacket(buf, 124);

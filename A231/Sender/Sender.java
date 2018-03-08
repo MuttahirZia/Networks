@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.nio.*;
+import java.util.Timer;
 
 public class Sender {
 
@@ -44,6 +45,9 @@ public class Sender {
 			int sequenceNumber = 0;
 			byte[] seqNumBuf = new byte[4];
 			byte[] packetBuffer;// = new byte[packetSize];
+
+			System.out.println("Start timer");
+			long startTime = System.nanoTime();
 
 			//begin main sending loop
 			while((i = inputStream.read(buffer)) != -1) {
@@ -103,7 +107,12 @@ public class Sender {
 			strack = new String(da.getData(), 0, da.getLength());  
 			//System.out.println(strack + " EOT");
 
-			//add timeout for eot
+
+			long stopTime = System.nanoTime();
+			long elapsedTime = stopTime - startTime;
+			double seconds = (double)elapsedTime / 1000000000.0;
+     		System.out.println("Total time elapsed: " + seconds);
+
 			
 			//clean up
 			dataSocket.close();

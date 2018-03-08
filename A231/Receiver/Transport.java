@@ -61,8 +61,8 @@ public class Transport implements Runnable {
 
 	    			int n = seqByteBuffer.getInt();
 
-	    			String r1 = new String(seqNumBuf, "UTF-8");
-	    			String r2 = new String(dataBuf, "UTF-8");
+	    			String seq = new String(seqNumBuf, "UTF-8");
+	    			String dat = new String(dataBuf, "UTF-8");
 
 
 	    			//send ack to sender
@@ -71,7 +71,7 @@ public class Transport implements Runnable {
 
 
 					//check for end of transmission
-	    			if (r2.contains(">>EOT<<")) {
+	    			if (dat.contains(">>EOT<<")) {
 	    				notEnd = false;
 	    			} else {
 	    				outputStream.write(dataBuf);
@@ -82,6 +82,9 @@ public class Transport implements Runnable {
 	    			dataBuf = new byte[120];
 				} 
 
+			client.l6.setText("" + count);
+			client.frame.validate ();
+			client.frame.repaint();
 		
 
 	    	}

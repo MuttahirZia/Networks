@@ -72,7 +72,7 @@ public class Sender {
 
 						//diplay acknowledgement
 						strack = new String(da.getData(), 0, da.getLength());  
-						System.out.println(strack);
+						//System.out.println(strack);
 
 						//continue sending until inputStream returns empty
 						next = true;
@@ -101,7 +101,7 @@ public class Sender {
 
 			//display end of transmission acknowledgemnt
 			strack = new String(da.getData(), 0, da.getLength());  
-			System.out.println(strack + " EOT");
+			//System.out.println(strack + " EOT");
 
 			//add timeout for eot
 			

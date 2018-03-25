@@ -41,8 +41,8 @@ public class Transport implements Runnable {
 
 			while (notEnd) {
 
-				buf = new byte[124];  
-	    		dp = new DatagramPacket(buf, 124);
+				buf = new byte[128];  
+	    		dp = new DatagramPacket(buf, 128);
 
 	    		if (count != 0 && count % 10 == 0 && !drop) {
 	    			drop = true;
@@ -55,7 +55,7 @@ public class Transport implements Runnable {
 	    		if (!(client.r2.isSelected() && drop)) {
 
 	    			byte[] seqNumBuf = Arrays.copyOfRange(dp.getData(),0,4);
-	    			byte[] dataBuf = Arrays.copyOfRange(dp.getData(),4,124);
+	    			byte[] dataBuf = Arrays.copyOfRange(dp.getData(),4,128);
 
     			    ByteBuffer seqByteBuffer = ByteBuffer.wrap(seqNumBuf);
 
@@ -79,7 +79,7 @@ public class Transport implements Runnable {
 	    			}
 
 	    			seqNumBuf = new byte[4];
-	    			dataBuf = new byte[120];
+	    			dataBuf = new byte[124];
 				} 
 
 			client.l6.setText("" + count);

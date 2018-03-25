@@ -8,7 +8,7 @@ public class Sender {
 
 	public static void main(String[] args) {
 
-		final int packetSize = 124;
+		final int packetSize = 128;
 
 		try {
 
@@ -25,7 +25,7 @@ public class Sender {
 
 
 			//read file and fill buffer with file contents
-			byte[] buffer = new byte[120];
+			byte[] buffer = new byte[124];
             FileInputStream inputStream = new FileInputStream(fileName);
 
 			//create datagramSocket
@@ -44,7 +44,7 @@ public class Sender {
 
 			int sequenceNumber = 0;
 			byte[] seqNumBuf = new byte[4];
-			byte[] packetBuffer;// = new byte[packetSize];
+			byte[] packetBuffer = new byte[128];// = new byte[packetSize];
 
 			System.out.println("Start timer");
 			long startTime = System.nanoTime();
@@ -60,9 +60,9 @@ public class Sender {
                 		//send data packets
                 		seqNumBuf = ByteBuffer.allocate(4).putInt(sequenceNumber).array();
                 		//add byte[]s
-						packetBuffer = new byte[seqNumBuf.length + buffer.length];
-						System.arraycopy(seqNumBuf, 0, packetBuffer, 0, seqNumBuf.length);
-						System.arraycopy(buffer, 0, packetBuffer, seqNumBuf.length, buffer.length);
+						//packetBuffer = new byte[seqNumBuf.length + buffer.length];
+						System.arraycopy(seqNumBuf, 0, packetBuffer, 0, 4);
+						System.arraycopy(buffer, 0, packetBuffer, 4, 124);
 
 
                 		dp = new DatagramPacket(packetBuffer, packetSize, ip, dataPort);
@@ -88,13 +88,13 @@ public class Sender {
                 	}
                 }
 
-                buffer = new byte[packetSize];
+                buffer = new byte[124];
                 sequenceNumber++;
 
             }
 
             //send end of transmission
-			String EOTstring = "    >>EOT<<";
+			String EOTstring = ">>EOT<<";
 			dp = new DatagramPacket(EOTstring.getBytes(), EOTstring.length(), ip, dataPort);
 			dataSocket.send(dp);
 

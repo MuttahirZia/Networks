@@ -73,6 +73,7 @@ public class Transport implements Runnable {
 					//check for end of transmission
 	    			if (dat.contains(">>EOT<<")) {
 	    				notEnd = false;
+	    				
 	    			} else {
 	    				outputStream.write(dataBuf);
 		    			count += 1;		

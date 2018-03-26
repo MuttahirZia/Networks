@@ -1,0 +1,735 @@
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.nio.file.*;
+
+public class SenderThread extends Thread {
+
+  final int BUFFER_IN = 124; //in bytes
+  final int BUFFER_OUT = 124; //in bytes
+  private DatagramSocket socket = null;
+  private FileInputStream in = null;
+  private boolean moreFrames = true;
+  private boolean flagEOF = false;
+  private boolean flagTimeout = false;
+  private int seq = 0;
+  private int ack = 0;
+  private byte[] bufIn = new byte[BUFFER_IN];
+  private byte[] bufOut = new byte[BUFFER_OUT];
+  private DatagramPacket packet = null;
+  private InetAddress address = null;
+  private int in_port = 8888;
+  private int out_port = 9999;
+  private String filename = "";
+  private int timeout = 0;
+
+//constructor, not even used
+  public SenderThread(String addr, int oport, int iport, String fname, int time) throws IOException {
+    this("SenderThread", addr, oport, iport, fname, time);
+  }
+
+//constructor, all params
+  public SenderThread(String name, String addr, int oport, int iport, String fname, int time ) throws IOException {
+    super(name);
+    address = InetAddress.getByName(addr);
+    in_port = iport;
+    out_port = oport;
+    filename = fname;
+    timeout = time; // in microseconds
+
+    socket = new DatagramSocket(in_port);
+
+    try {
+      Path path = Paths.get(filename);
+      in = new FileInputStream(path.toFile());
+    } catch (FileNotFoundException e) {
+      System.err.println("Could not open file. Please provide file as an absolute path in quotation marks.");
+    }
+  }
+
+//main
+  public void run() {
+    while (moreFrames) {
+      try {
+        // receive request
+        bufIn = new byte[BUFFER_IN]; //clear buffer
+        packet = new DatagramPacket(bufIn, bufIn.length);
+        try{
+          socket.receive(packet);
+          socket.setSoTimeout(Math.round(timeout/1000));
+          ack = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+          System.out.println("Recieved packet: " + ack);
+          System.out.println("On packet: " + seq);
+        } catch (SocketTimeoutException e) {
+          System.out.println("timeout");
+        }
+
+        // send the response to the client at "address" and "port"
+        getNextFrame(); //buf gets updated in this method
+
+        //EOF
+        if(flagEOF == true){
+          bufOut = new byte[BUFFER_OUT]; //clear buffer
+          
+          byte[] seq_num = getSeqByte(seq+1);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          outputStream.write(seq_num);
+          outputStream.write(Integer.toString(ack).getBytes());
+          bufOut = outputStream.toByteArray();
+          packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+          socket.send(packet);
+          moreFrames = false;
+          break;
+        }
+
+        //Send packet normally
+        packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+        socket.send(packet);
+        System.out.println("Sent packet ending on: " + seq);
+
+      } catch (IOException e) {
+        e.printStackTrace();
+        moreFrames = false;
+      }
+    }
+    socket.close();
+  }
+
+  private void getNextFrame() {
+    int bytesRead = 0;
+    try {
+      if (seq != ack || seq == -1){ //Need to resend
+        System.out.println("RESEND");
+        return;
+      }
+      System.out.println("SEQUENCE NUMBER IS: " + (seq+1));
+      bufOut = new byte[BUFFER_OUT-8]; //clear buffer
+      bytesRead = in.read(bufOut); //Update buffer
+
+      if (bytesRead != -1) { //Send
+        System.out.println("SEND");
+        //resize buffer to match shape of data
+        
+        byte[] seq_num = new byte[8];
+        seq_num = getSeqByte(seq+1);
+        byte[] resizebuf = new byte[bytesRead];
+        System.arraycopy(bufOut,0,resizebuf,0,bytesRead);
+        bufOut = new byte[bytesRead];
+        System.arraycopy(resizebuf,0,bufOut,0,bytesRead);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(seq_num);
+        outputStream.write(bufOut);
+        byte[] tempbuf = outputStream.toByteArray();
+        bufOut = new byte[tempbuf.length];
+        System.arraycopy(tempbuf,0,bufOut,0,tempbuf.length);
+
+        seq += bufOut.length;
+      } else { //EOF
+        System.out.println("EOF");
+        in.close();
+        flagEOF = true;
+      }
+    } catch (IOException e) {
+      moreFrames = false;
+    }
+    return;
+  }
+
+  private byte[] getSeqByte(int seq) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.putInt(seq);
+    return byteBuffer.array();
+  }
+}
+
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.nio.file.*;
+
+public class SenderThread extends Thread {
+
+  final int BUFFER_IN = 124; //in bytes
+  final int BUFFER_OUT = 124; //in bytes
+  private DatagramSocket socket = null;
+  private FileInputStream in = null;
+  private boolean moreFrames = true;
+  private boolean flagEOF = false;
+  private boolean flagTimeout = false;
+  private int seq = 0;
+  private int ack = 0;
+  private byte[] bufIn = new byte[BUFFER_IN];
+  private byte[] bufOut = new byte[BUFFER_OUT];
+  private DatagramPacket packet = null;
+  private InetAddress address = null;
+  private int in_port = 8888;
+  private int out_port = 9999;
+  private String filename = "";
+  private int timeout = 0;
+
+//constructor, not even used
+  public SenderThread(String addr, int oport, int iport, String fname, int time) throws IOException {
+    this("SenderThread", addr, oport, iport, fname, time);
+  }
+
+//constructor, all params
+  public SenderThread(String name, String addr, int oport, int iport, String fname, int time ) throws IOException {
+    super(name);
+    address = InetAddress.getByName(addr);
+    in_port = iport;
+    out_port = oport;
+    filename = fname;
+    timeout = time; // in microseconds
+
+    socket = new DatagramSocket(in_port);
+
+    try {
+      Path path = Paths.get(filename);
+      in = new FileInputStream(path.toFile());
+    } catch (FileNotFoundException e) {
+      System.err.println("Could not open file. Please provide file as an absolute path in quotation marks.");
+    }
+  }
+
+//main
+  public void run() {
+    while (moreFrames) {
+      try {
+        // receive request
+        bufIn = new byte[BUFFER_IN]; //clear buffer
+        packet = new DatagramPacket(bufIn, bufIn.length);
+        try{
+          socket.receive(packet);
+          socket.setSoTimeout(Math.round(timeout/1000));
+          ack = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+          System.out.println("Recieved packet: " + ack);
+          System.out.println("On packet: " + seq);
+        } catch (SocketTimeoutException e) {
+          System.out.println("timeout");
+        }
+
+        // send the response to the client at "address" and "port"
+        getNextFrame(); //buf gets updated in this method
+
+        //EOF
+        if(flagEOF == true){
+          bufOut = new byte[BUFFER_OUT]; //clear buffer
+          
+          byte[] seq_num = getSeqByte(seq+1);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          outputStream.write(seq_num);
+          outputStream.write(Integer.toString(ack).getBytes());
+          bufOut = outputStream.toByteArray();
+          packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+          socket.send(packet);
+          moreFrames = false;
+          break;
+        }
+
+        //Send packet normally
+        packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+        socket.send(packet);
+        System.out.println("Sent packet ending on: " + seq);
+
+      } catch (IOException e) {
+        e.printStackTrace();
+        moreFrames = false;
+      }
+    }
+    socket.close();
+  }
+
+  private void getNextFrame() {
+    int bytesRead = 0;
+    try {
+      if (seq != ack || seq == -1){ //Need to resend
+        System.out.println("RESEND");
+        return;
+      }
+      System.out.println("SEQUENCE NUMBER IS: " + (seq+1));
+      bufOut = new byte[BUFFER_OUT-8]; //clear buffer
+      bytesRead = in.read(bufOut); //Update buffer
+
+      if (bytesRead != -1) { //Send
+        System.out.println("SEND");
+        //resize buffer to match shape of data
+        
+        byte[] seq_num = new byte[8];
+        seq_num = getSeqByte(seq+1);
+        byte[] resizebuf = new byte[bytesRead];
+        System.arraycopy(bufOut,0,resizebuf,0,bytesRead);
+        bufOut = new byte[bytesRead];
+        System.arraycopy(resizebuf,0,bufOut,0,bytesRead);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(seq_num);
+        outputStream.write(bufOut);
+        byte[] tempbuf = outputStream.toByteArray();
+        bufOut = new byte[tempbuf.length];
+        System.arraycopy(tempbuf,0,bufOut,0,tempbuf.length);
+
+        seq += bufOut.length;
+      } else { //EOF
+        System.out.println("EOF");
+        in.close();
+        flagEOF = true;
+      }
+    } catch (IOException e) {
+      moreFrames = false;
+    }
+    return;
+  }
+
+  private byte[] getSeqByte(int seq) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.putInt(seq);
+    return byteBuffer.array();
+  }
+}
+
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.nio.file.*;
+
+public class SenderThread extends Thread {
+
+  final int BUFFER_IN = 124; //in bytes
+  final int BUFFER_OUT = 124; //in bytes
+  private DatagramSocket socket = null;
+  private FileInputStream in = null;
+  private boolean moreFrames = true;
+  private boolean flagEOF = false;
+  private boolean flagTimeout = false;
+  private int seq = 0;
+  private int ack = 0;
+  private byte[] bufIn = new byte[BUFFER_IN];
+  private byte[] bufOut = new byte[BUFFER_OUT];
+  private DatagramPacket packet = null;
+  private InetAddress address = null;
+  private int in_port = 8888;
+  private int out_port = 9999;
+  private String filename = "";
+  private int timeout = 0;
+
+//constructor, not even used
+  public SenderThread(String addr, int oport, int iport, String fname, int time) throws IOException {
+    this("SenderThread", addr, oport, iport, fname, time);
+  }
+
+//constructor, all params
+  public SenderThread(String name, String addr, int oport, int iport, String fname, int time ) throws IOException {
+    super(name);
+    address = InetAddress.getByName(addr);
+    in_port = iport;
+    out_port = oport;
+    filename = fname;
+    timeout = time; // in microseconds
+
+    socket = new DatagramSocket(in_port);
+
+    try {
+      Path path = Paths.get(filename);
+      in = new FileInputStream(path.toFile());
+    } catch (FileNotFoundException e) {
+      System.err.println("Could not open file. Please provide file as an absolute path in quotation marks.");
+    }
+  }
+
+//main
+  public void run() {
+    while (moreFrames) {
+      try {
+        // receive request
+        bufIn = new byte[BUFFER_IN]; //clear buffer
+        packet = new DatagramPacket(bufIn, bufIn.length);
+        try{
+          socket.receive(packet);
+          socket.setSoTimeout(Math.round(timeout/1000));
+          ack = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+          System.out.println("Recieved packet: " + ack);
+          System.out.println("On packet: " + seq);
+        } catch (SocketTimeoutException e) {
+          System.out.println("timeout");
+        }
+
+        // send the response to the client at "address" and "port"
+        getNextFrame(); //buf gets updated in this method
+
+        //EOF
+        if(flagEOF == true){
+          bufOut = new byte[BUFFER_OUT]; //clear buffer
+          
+          byte[] seq_num = getSeqByte(seq+1);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          outputStream.write(seq_num);
+          outputStream.write(Integer.toString(ack).getBytes());
+          bufOut = outputStream.toByteArray();
+          packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+          socket.send(packet);
+          moreFrames = false;
+          break;
+        }
+
+        //Send packet normally
+        packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+        socket.send(packet);
+        System.out.println("Sent packet ending on: " + seq);
+
+      } catch (IOException e) {
+        e.printStackTrace();
+        moreFrames = false;
+      }
+    }
+    socket.close();
+  }
+
+  private void getNextFrame() {
+    int bytesRead = 0;
+    try {
+      if (seq != ack || seq == -1){ //Need to resend
+        System.out.println("RESEND");
+        return;
+      }
+      System.out.println("SEQUENCE NUMBER IS: " + (seq+1));
+      bufOut = new byte[BUFFER_OUT-8]; //clear buffer
+      bytesRead = in.read(bufOut); //Update buffer
+
+      if (bytesRead != -1) { //Send
+        System.out.println("SEND");
+        //resize buffer to match shape of data
+        
+        byte[] seq_num = new byte[8];
+        seq_num = getSeqByte(seq+1);
+        byte[] resizebuf = new byte[bytesRead];
+        System.arraycopy(bufOut,0,resizebuf,0,bytesRead);
+        bufOut = new byte[bytesRead];
+        System.arraycopy(resizebuf,0,bufOut,0,bytesRead);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(seq_num);
+        outputStream.write(bufOut);
+        byte[] tempbuf = outputStream.toByteArray();
+        bufOut = new byte[tempbuf.length];
+        System.arraycopy(tempbuf,0,bufOut,0,tempbuf.length);
+
+        seq += bufOut.length;
+      } else { //EOF
+        System.out.println("EOF");
+        in.close();
+        flagEOF = true;
+      }
+    } catch (IOException e) {
+      moreFrames = false;
+    }
+    return;
+  }
+
+  private byte[] getSeqByte(int seq) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.putInt(seq);
+    return byteBuffer.array();
+  }
+}
+
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.nio.file.*;
+
+public class SenderThread extends Thread {
+
+  final int BUFFER_IN = 124; //in bytes
+  final int BUFFER_OUT = 124; //in bytes
+  private DatagramSocket socket = null;
+  private FileInputStream in = null;
+  private boolean moreFrames = true;
+  private boolean flagEOF = false;
+  private boolean flagTimeout = false;
+  private int seq = 0;
+  private int ack = 0;
+  private byte[] bufIn = new byte[BUFFER_IN];
+  private byte[] bufOut = new byte[BUFFER_OUT];
+  private DatagramPacket packet = null;
+  private InetAddress address = null;
+  private int in_port = 8888;
+  private int out_port = 9999;
+  private String filename = "";
+  private int timeout = 0;
+
+//constructor, not even used
+  public SenderThread(String addr, int oport, int iport, String fname, int time) throws IOException {
+    this("SenderThread", addr, oport, iport, fname, time);
+  }
+
+//constructor, all params
+  public SenderThread(String name, String addr, int oport, int iport, String fname, int time ) throws IOException {
+    super(name);
+    address = InetAddress.getByName(addr);
+    in_port = iport;
+    out_port = oport;
+    filename = fname;
+    timeout = time; // in microseconds
+
+    socket = new DatagramSocket(in_port);
+
+    try {
+      Path path = Paths.get(filename);
+      in = new FileInputStream(path.toFile());
+    } catch (FileNotFoundException e) {
+      System.err.println("Could not open file. Please provide file as an absolute path in quotation marks.");
+    }
+  }
+
+//main
+  public void run() {
+    while (moreFrames) {
+      try {
+        // receive request
+        bufIn = new byte[BUFFER_IN]; //clear buffer
+        packet = new DatagramPacket(bufIn, bufIn.length);
+        try{
+          socket.receive(packet);
+          socket.setSoTimeout(Math.round(timeout/1000));
+          ack = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+          System.out.println("Recieved packet: " + ack);
+          System.out.println("On packet: " + seq);
+        } catch (SocketTimeoutException e) {
+          System.out.println("timeout");
+        }
+
+        // send the response to the client at "address" and "port"
+        getNextFrame(); //buf gets updated in this method
+
+        //EOF
+        if(flagEOF == true){
+          bufOut = new byte[BUFFER_OUT]; //clear buffer
+          
+          byte[] seq_num = getSeqByte(seq+1);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          outputStream.write(seq_num);
+          outputStream.write(Integer.toString(ack).getBytes());
+          bufOut = outputStream.toByteArray();
+          packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+          socket.send(packet);
+          moreFrames = false;
+          break;
+        }
+
+        //Send packet normally
+        packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+        socket.send(packet);
+        System.out.println("Sent packet ending on: " + seq);
+
+      } catch (IOException e) {
+        e.printStackTrace();
+        moreFrames = false;
+      }
+    }
+    socket.close();
+  }
+
+  private void getNextFrame() {
+    int bytesRead = 0;
+    try {
+      if (seq != ack || seq == -1){ //Need to resend
+        System.out.println("RESEND");
+        return;
+      }
+      System.out.println("SEQUENCE NUMBER IS: " + (seq+1));
+      bufOut = new byte[BUFFER_OUT-8]; //clear buffer
+      bytesRead = in.read(bufOut); //Update buffer
+
+      if (bytesRead != -1) { //Send
+        System.out.println("SEND");
+        //resize buffer to match shape of data
+        
+        byte[] seq_num = new byte[8];
+        seq_num = getSeqByte(seq+1);
+        byte[] resizebuf = new byte[bytesRead];
+        System.arraycopy(bufOut,0,resizebuf,0,bytesRead);
+        bufOut = new byte[bytesRead];
+        System.arraycopy(resizebuf,0,bufOut,0,bytesRead);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(seq_num);
+        outputStream.write(bufOut);
+        byte[] tempbuf = outputStream.toByteArray();
+        bufOut = new byte[tempbuf.length];
+        System.arraycopy(tempbuf,0,bufOut,0,tempbuf.length);
+
+        seq += bufOut.length;
+      } else { //EOF
+        System.out.println("EOF");
+        in.close();
+        flagEOF = true;
+      }
+    } catch (IOException e) {
+      moreFrames = false;
+    }
+    return;
+  }
+
+  private byte[] getSeqByte(int seq) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.putInt(seq);
+    return byteBuffer.array();
+  }
+}
+
+import java.io.*;
+import java.math.BigInteger;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.nio.file.*;
+
+public class SenderThread extends Thread {
+
+  final int BUFFER_IN = 124; //in bytes
+  final int BUFFER_OUT = 124; //in bytes
+  private DatagramSocket socket = null;
+  private FileInputStream in = null;
+  private boolean moreFrames = true;
+  private boolean flagEOF = false;
+  private boolean flagTimeout = false;
+  private int seq = 0;
+  private int ack = 0;
+  private byte[] bufIn = new byte[BUFFER_IN];
+  private byte[] bufOut = new byte[BUFFER_OUT];
+  private DatagramPacket packet = null;
+  private InetAddress address = null;
+  private int in_port = 8888;
+  private int out_port = 9999;
+  private String filename = "";
+  private int timeout = 0;
+
+//constructor, not even used
+  public SenderThread(String addr, int oport, int iport, String fname, int time) throws IOException {
+    this("SenderThread", addr, oport, iport, fname, time);
+  }
+
+//constructor, all params
+  public SenderThread(String name, String addr, int oport, int iport, String fname, int time ) throws IOException {
+    super(name);
+    address = InetAddress.getByName(addr);
+    in_port = iport;
+    out_port = oport;
+    filename = fname;
+    timeout = time; // in microseconds
+
+    socket = new DatagramSocket(in_port);
+
+    try {
+      Path path = Paths.get(filename);
+      in = new FileInputStream(path.toFile());
+    } catch (FileNotFoundException e) {
+      System.err.println("Could not open file. Please provide file as an absolute path in quotation marks.");
+    }
+  }
+
+//main
+  public void run() {
+    while (moreFrames) {
+      try {
+        // receive request
+        bufIn = new byte[BUFFER_IN]; //clear buffer
+        packet = new DatagramPacket(bufIn, bufIn.length);
+        try{
+          socket.receive(packet);
+          socket.setSoTimeout(Math.round(timeout/1000));
+          ack = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+          System.out.println("Recieved packet: " + ack);
+          System.out.println("On packet: " + seq);
+        } catch (SocketTimeoutException e) {
+          System.out.println("timeout");
+        }
+
+        // send the response to the client at "address" and "port"
+        getNextFrame(); //buf gets updated in this method
+
+        //EOF
+        if(flagEOF == true){
+          bufOut = new byte[BUFFER_OUT]; //clear buffer
+          
+          byte[] seq_num = getSeqByte(seq+1);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          outputStream.write(seq_num);
+          outputStream.write(Integer.toString(ack).getBytes());
+          bufOut = outputStream.toByteArray();
+          packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+          socket.send(packet);
+          moreFrames = false;
+          break;
+        }
+
+        //Send packet normally
+        packet = new DatagramPacket(bufOut, bufOut.length, address, out_port);
+        socket.send(packet);
+        System.out.println("Sent packet ending on: " + seq);
+
+      } catch (IOException e) {
+        e.printStackTrace();
+        moreFrames = false;
+      }
+    }
+    socket.close();
+  }
+
+  private void getNextFrame() {
+    int bytesRead = 0;
+    try {
+      if (seq != ack || seq == -1){ //Need to resend
+        System.out.println("RESEND");
+        return;
+      }
+      System.out.println("SEQUENCE NUMBER IS: " + (seq+1));
+      bufOut = new byte[BUFFER_OUT-8]; //clear buffer
+      bytesRead = in.read(bufOut); //Update buffer
+
+      if (bytesRead != -1) { //Send
+        System.out.println("SEND");
+        //resize buffer to match shape of data
+        
+        byte[] seq_num = new byte[8];
+        seq_num = getSeqByte(seq+1);
+        byte[] resizebuf = new byte[bytesRead];
+        System.arraycopy(bufOut,0,resizebuf,0,bytesRead);
+        bufOut = new byte[bytesRead];
+        System.arraycopy(resizebuf,0,bufOut,0,bytesRead);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(seq_num);
+        outputStream.write(bufOut);
+        byte[] tempbuf = outputStream.toByteArray();
+        bufOut = new byte[tempbuf.length];
+        System.arraycopy(tempbuf,0,bufOut,0,tempbuf.length);
+
+        seq += bufOut.length;
+      } else { //EOF
+        System.out.println("EOF");
+        in.close();
+        flagEOF = true;
+      }
+    } catch (IOException e) {
+      moreFrames = false;
+    }
+    return;
+  }
+
+  private byte[] getSeqByte(int seq) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.putInt(seq);
+    return byteBuffer.array();
+  }
+}
+                                                 

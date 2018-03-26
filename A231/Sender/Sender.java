@@ -94,7 +94,7 @@ public class Sender {
             }
 
             //send end of transmission
-			String EOTstring = ">>EOT<<";
+			String EOTstring = "    >>EOT<<";
 			dp = new DatagramPacket(EOTstring.getBytes(), EOTstring.length(), ip, dataPort);
 			dataSocket.send(dp);
 
